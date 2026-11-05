@@ -1,9 +1,9 @@
 # CLAUDE.md — Always-On Rules for This Project
 
-Read this every session. The full spec is in `PROJECT_PLAN.md`. This file is the short version of the rules that must **never** be broken. If anything here conflicts with a request, follow these rules and say so.
+Read this every session. The full spec is in `docs/PROJECT_PLAN.md`. This file is the short version of the rules that must **never** be broken. If anything here conflicts with a request, follow these rules and say so.
 
 ## What this project is
-A **paper-trading (simulated money) US-stock system** for learning and capital preservation. **V1 has NO real money and NO broker integration.** Do not write real-money or broker code under any circumstances in V1 — it is gated behind a deliberate checklist in `PROJECT_PLAN.md` §12.
+A **paper-trading (simulated money) US-stock system** for learning and capital preservation. **V1 has NO real money and NO broker integration.** Do not write real-money or broker code under any circumstances in V1 — it is gated behind a deliberate checklist in `docs/PROJECT_PLAN.md` §12.
 
 ## The one goal
 **Do not lose money.** Break-even is acceptable; profit is a bonus. When in doubt, protect the capital. Cash is a valid position.
@@ -31,7 +31,7 @@ A **paper-trading (simulated money) US-stock system** for learning and capital p
 6. **Known-answer test is mandatory** in the backtester: a "just buy SPY and hold" run must reproduce SPY's real return. A spectacular result is a **suspected bug** — hunt leakage before trusting it.
 7. **Validation gate before any decision:** reject impossible values, flag ±50% spikes and gaps, **skip-and-log** bad stocks in isolation; never fill fake data, never crash the whole run. Save raw pulls unmodified.
 8. **Fail loud, log everything** — every prediction, decision, skip, and error.
-9. **Build phase by phase and test each phase** (see `PROJECT_PLAN.md` §7). Do not batch-generate untested code across many files.
+9. **Build phase by phase and test each phase** (see `docs/PROJECT_PLAN.md` §7). Do not batch-generate untested code across many files.
 10. **No guaranteed-profit claims** anywhere.
 11. **No cloud/AWS in V1** — runs free on the local machine.
 
