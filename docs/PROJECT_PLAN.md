@@ -248,12 +248,12 @@ ai-stock-trader/
 │   ├── raw/                   # untouched raw pulls (git-ignored)
 │   ├── processed/             # cleaned data (git-ignored)
 │   └── models/                # saved model files (git-ignored)
+├── docs/                      # project documentation and guides
 ├── .env.example
 ├── .env                       # local secrets/settings (git-ignored)
 ├── .gitignore
 ├── requirements.txt
-├── docs/ENGINEERING_RULES.md                  # always-on rules for an AI coding assistant
-└── PROJECT_PLAN.md            # this document
+└── docs/ENGINEERING_RULES.md                  # always-on rules for an AI coding assistant
 ```
 
 ---
