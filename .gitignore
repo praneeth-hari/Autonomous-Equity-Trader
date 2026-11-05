@@ -5,6 +5,7 @@ data/fundamentals/
 data/raw/
 data/reports/
 data/processed/
+data/models/
 data/models/*
 !data/models/active_model.joblib
 !data/models/active_model_metadata.json
@@ -47,6 +48,8 @@ htmlcov/
 .serena/
 
 # ── Local scratch scripts (root) ──────────────────────────────────────────────
+scratch/
+architecture_visualization.html
 /fix_test*.py
 *.swp
 *.swo
