@@ -88,7 +88,7 @@ All defaults live in `config/settings.py` and can be overridden through `.env`.
 ## Project structure
 
 ```
-ai-stock-trader/
+Autonomous-Equity-Trader/
 ├── config/          # Central settings (the only place env vars are read)
 ├── src/
 │   ├── data/        # Market data fetching + validation gate
@@ -102,6 +102,7 @@ ai-stock-trader/
 │   ├── pipeline/    # Daily pipeline orchestrator and scheduler
 │   └── db/          # ORM models and repository layer
 ├── dashboard/       # Streamlit monitoring dashboard
+├── docs/            # Guides, project plan and technical documentation
 ├── tests/           # pytest suite
 ├── data/            # Raw snapshots, processed data, trained models (git-ignored)
 └── reports/         # Generated reports
@@ -116,8 +117,8 @@ ai-stock-trader/
 ### Install
 
 ```bash
-git clone https://github.com/praneeth-hari/ai-stock-trader.git
-cd ai-stock-trader
+git clone https://github.com/praneeth-hari/Autonomous-Equity-Trader.git
+cd Autonomous-Equity-Trader
 
 python -m venv .venv
 .venv\Scripts\activate          # macOS/Linux: source .venv/bin/activate
