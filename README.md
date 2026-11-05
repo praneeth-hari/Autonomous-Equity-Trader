@@ -189,7 +189,7 @@ Built by [@praneeth-hari](https://github.com/praneeth-hari).
 
 ## License
 
-No license has been chosen yet. Add one (MIT is a common choice for portfolio projects) before inviting reuse.
+Released under the [MIT License](LICENSE).
 
 ## Status
 
