@@ -41,6 +41,11 @@ from src.alerts.dedup import is_alert_already_sent, mark_alert_sent
 
 logger = logging.getLogger(__name__)
 
+# The Telegram bot token is part of every request URL, and httpx logs each URL at INFO level.
+# Keep these libraries at WARNING so the token can never be written to a log file.
+for _noisy in ("httpx", "httpcore"):
+    logging.getLogger(_noisy).setLevel(logging.WARNING)
+
 NY_TZ = ZoneInfo("America/New_York")
 
 

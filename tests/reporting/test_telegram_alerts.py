@@ -208,3 +208,18 @@ class TestTriggerBuilders:
         assert "📌 POSITIONS (2/5):" in msg
         assert "✅ Pipeline: SUCCESS" in msg
 
+
+
+def test_http_libraries_never_log_request_urls_that_contain_the_bot_token(caplog):
+    """The token is part of every Telegram URL; httpx logs URLs at INFO, so it must stay at WARNING."""
+    import logging
+
+    import src.alerts.telegram_alerts  # noqa: F401 - importing it sets the log levels
+
+    for name in ("httpx", "httpcore"):
+        assert logging.getLogger(name).getEffectiveLevel() >= logging.WARNING
+
+    secret = "bot1234567890:AAFAKE_token_value_for_test_only_xyz"
+    with caplog.at_level(logging.INFO):
+        logging.getLogger("httpx").info('HTTP Request: POST https://api.telegram.org/%s/getMe "HTTP/1.1 200 OK"', secret)
+    assert secret not in caplog.text

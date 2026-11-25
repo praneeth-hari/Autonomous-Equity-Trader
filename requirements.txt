@@ -33,6 +33,11 @@ sqlalchemy>=2.0.30
 psycopg[binary]>=3.1.18    # Modern PostgreSQL driver (Supabase default)
 psycopg2-binary>=2.9.9    # PostgreSQL driver (Cloud Supabase)
 
+# ── Web API (backend for the web dashboard) ──────────────────────────────────
+fastapi>=0.115.0
+uvicorn>=0.30.0
+httpx>=0.27.0    # FastAPI TestClient used by the API tests
+
 # ── Scheduling ────────────────────────────────────────────────────────────────
 apscheduler>=3.10.4
 
