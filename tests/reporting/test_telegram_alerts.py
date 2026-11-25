@@ -219,7 +219,7 @@ def test_http_libraries_never_log_request_urls_that_contain_the_bot_token(caplog
     for name in ("httpx", "httpcore"):
         assert logging.getLogger(name).getEffectiveLevel() >= logging.WARNING
 
-    secret = "bot1234567890:AAFAKE_token_value_for_test_only_xyz"
+    secret = "bot1234567890:AAFAKE_token_value_for_test_only_xyz"  # secret-scan: allow
     with caplog.at_level(logging.INFO):
         logging.getLogger("httpx").info('HTTP Request: POST https://api.telegram.org/%s/getMe "HTTP/1.1 200 OK"', secret)
     assert secret not in caplog.text

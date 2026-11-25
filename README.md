@@ -176,6 +176,22 @@ powershell -ExecutionPolicy Bypass -File .\setup_task_scheduler.ps1
 
 This registers the daily run (Mon-Fri 5:00 PM), a 9:00 AM health check, a startup health check, and a 6:00 PM status digest, plus the monthly retrain and weekly summary. If an older version of this script left an `AI-Stock-Trader-Dashboard.lnk` shortcut in your Windows Startup folder, delete just that file. Do not run `remove_task_scheduler.ps1` for this: it removes every task above. Remove them with `remove_task_scheduler.ps1`.
 
+## Operations
+
+The nightly run (`run_trader.bat`) does these steps in order, and tells you on Telegram when something goes wrong:
+
+1. **Environment check** (`python -m src.ops.envcheck`): packages, the frozen model's predictions, the database, disk and memory. A failure stops the run and alerts you.
+2. **Backup** (`python -m src.ops.backup create`): a verified copy of the database before the run changes it; the newest 14 are kept. Test one with `python -m src.ops.backup restore-test`.
+3. **The trading cycle.** A crash, a halt (kill switch) or a missed run sends an alert; the morning health check also alerts.
+
+Open-source tools in use: `exchange_calendars` (the real NYSE calendar for the data check), `QuantStats` (`python -m src.reports.tearsheet` writes a performance report against SPY, once there are 30 days of history), `pandera` (declared rules for stored prices, checked by `python -m src.ops.data_audit`), `skops` (`python -m src.ops.model_safe export` makes a copy of the frozen model that cannot run code when loaded, and `verify` checks it reproduces the frozen predictions), `ruff` and `pip-audit` (`requirements-dev.txt`), `gitleaks` (runs on GitHub; config in `.gitleaks.toml`) and `Playwright` (`cd web; npm run e2e` runs browser tests against a mock API).
+
+Other tools: `check_all.ps1` runs the pre-push gate (secret scan, environment check, tests, web build); `python -m src.ops.secret_scan` looks for secrets; `python -m src.ops.gate_review` reports what the data check rejects (see `docs/DATA_GATE_REVIEW.md`). `requirements.lock.txt` holds the exact tested versions.
+
+**Dead man's switch (you set this up once):** alerts sent by this PC cannot fire when the PC is off. Create a free check at healthchecks.io, set its schedule to the weekday run time with a generous grace period, and put its ping URL in `.env` as `HEALTHCHECK_PING_URL`. The nightly run then pings it at the start and the end, and the service messages you if a ping does not arrive. Only a few words ("exit code 0") leave the machine; with no URL it does nothing.
+
+Optional human approval of buys is off by default. Set `HUMAN_APPROVAL_REQUIRED=true` in `.env` to make each buy wait for your decision on the Approvals page (no decision means no buy; sells are never held back). The kill switch on the same page halts the whole run, including stop-losses, so use it deliberately.
+
 ## Results
 
 Historical tuning has stopped. No configuration showed a durable edge over SPY. Final benchmark for the configured strategy (2-year walk-forward, net of 0.2% per trade; optimistic, real results likely worse):

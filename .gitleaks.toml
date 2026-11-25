@@ -1,0 +1,18 @@
+# gitleaks configuration: the default rules, plus an allow-list for files that contain deliberate FAKE secrets.
+# Used by the GitHub workflow (.github/workflows/tests.yml) and by `gitleaks detect` if you install it locally.
+title = "Paper Trader gitleaks config"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Tests and docs that hold deliberate fake tokens, passwords and database URLs"
+paths = [
+  '''tests/pipeline/test_workflow_summary\.py''',
+  '''tests/reporting/test_watchdog\.py''',
+  '''tests/reporting/test_telegram_alerts\.py''',
+  '''tests/reporting/test_heartbeat\.py''',
+  '''tests/ops/test_secret_scan\.py''',
+  '''tests/database/test_postgres_migration\.py''',
+  '''docs/GITHUB_SETUP\.md''',
+]

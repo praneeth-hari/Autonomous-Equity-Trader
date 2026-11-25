@@ -86,7 +86,10 @@ def test_second_process_is_refused_while_another_process_holds_the_lock(world):
         assert repository.get_portfolio_snapshot(D, "US") is None
         assert repository.get_trades(limit=10, market="US") == []
         blocked = [e for e in repository.get_events(limit=20) if "CONCURRENT RUN BLOCKED" in (e.get("message") or "")]
-        assert blocked and blocked[0]["details"]["lock_holder"]["pid"] == holder.pid
+        # The holder writes its own os.getpid() into the ready file. Popen.pid is not used: with a virtualenv on Windows
+        # it is the launcher stub, not the interpreter that actually holds the lock.
+        holder_pid = int(ready.read_text())
+        assert blocked and blocked[0]["details"]["lock_holder"]["pid"] == holder_pid
     finally:
         (world["tmp"] / "holder.ready.release").write_text("")
         holder.communicate(timeout=60)

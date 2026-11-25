@@ -1,0 +1,14 @@
+# Lint settings. The gate blocks only on rules that find real bugs; cosmetic rules (unused imports, f-string style)
+# are deliberately not enforced so the frozen V1 code is not mass-edited for no benefit.
+target-version = "py311"
+
+# fix_test*.py are untracked scratch files in the project root, not part of the project.
+extend-exclude = ["scratch", "web", "fix_test*.py", "data", "logs", "reports", ".venv"]
+
+[lint]
+select = [
+    "E9",   # syntax errors
+    "F63",  # invalid comparisons and assertions (e.g. `assert (x, "msg")`)
+    "F7",   # misplaced return/yield/break and similar
+    "F82",  # undefined names
+]

@@ -32,7 +32,7 @@ import asyncio
 import logging
 import sys
 from datetime import datetime
-from typing import Optional
+from typing import Any, Optional
 from zoneinfo import ZoneInfo
 
 from config.settings import settings

@@ -19,11 +19,14 @@ from __future__ import annotations
 import math
 import os
 import tempfile
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from unittest.mock import MagicMock, patch
 
 import pandas as pd
 import pytest
+
+if TYPE_CHECKING:  # only for the annotation below; the real import happens inside the helper
+    from src.trading.paper_broker import PaperBroker
 
 # ── Utilities ─────────────────────────────────────────────────────────────────
 

@@ -1,0 +1,4 @@
+# Tools for developing and checking the project. NOT needed to run the nightly trading cycle.
+#   .venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+ruff>=0.5             # linter (real-bug rules only, see ruff.toml)
+pip-audit>=2.7        # checks installed packages against known-vulnerability databases
