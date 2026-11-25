@@ -53,7 +53,7 @@ def test_generate_weekly_summary_data_with_snapshots():
     ])
 
     with patch("src.db.repository.get_portfolio_snapshots", return_value=snaps), \
-         patch("dashboard.data_loader.get_recent_trades_df", return_value=mock_trades), \
+         patch("src.services.data_loader.get_recent_trades_df", return_value=mock_trades), \
          patch("src.db.repository.get_events", return_value=[]):
         
         data = generate_weekly_summary_data(date(2026, 9, 20))

@@ -1,8 +1,8 @@
 """
-dashboard/data_loader.py — Data loading, queries, and trigger functions for Streamlit dashboard.
+src/services/data_loader.py — Data loading, queries, and trigger functions (UI-free).
 
 Pulls directly from the DB repository (src.db.repository), settings, active model,
-and backtesting engine. Decouples business logic and SQL from UI rendering.
+and backtesting engine. Shared by the read-only API, reports and the chatbot; keeps business logic and SQL out of any UI.
 """
 
 from __future__ import annotations
@@ -39,36 +39,45 @@ def get_last_pipeline_status() -> Dict[str, Any]:
     Inspects the database event log to determine the true outcome of the most recent pipeline execution.
     Returns:
         {
-            "status": "SUCCESS" | "FAILED" | "SKIPPED" | "NO_RUNS",
+            "status": "SUCCESS" | "DEGRADED" | "PARTIAL_SUCCESS" | "HALTED" | "FAILED" | "SKIPPED" | "NO_RUNS",
             "message": str,
             "timestamp": Optional[str],
             "run_date": Optional[str],
         }
     """
     try:
-        events = repository.get_events(limit=30)
+        # Read only the pipeline's own events: unrelated chatter (e.g. market_data) must not
+        # push the last real run out of the window.
+        events = []
+        for component in ("daily_pipeline", "scheduler"):
+            events.extend(repository.get_events(component=component, limit=200))
+        events.sort(key=lambda e: str(e.get("timestamp", "")), reverse=True)
     except Exception as exc:
         logger.warning("DB connection error in get_last_pipeline_status: %s", exc)
         return {"status": "NO_RUNS", "message": "Database disconnected", "timestamp": None}
 
     for e in events:
-        comp = str(e.get("component", ""))
         msg = str(e.get("message", ""))
-        lvl = str(e.get("level", ""))
+        lvl = str(e.get("level", "")).upper()
         ts = str(e.get("timestamp", ""))
 
-        if comp in ("daily_pipeline", "scheduler"):
-            for explicit in ("FAILED", "DEGRADED", "HALTED", "SKIPPED"):
-                if f"Status={explicit}" in msg:
-                    return {"status": explicit, "message": msg, "timestamp": ts}
-            if "Pipeline complete" in msg or "Scheduled pipeline run completed" in msg:
-                if "Status=FAILED" in msg or "status: FAILED" in msg or "Status=PARTIAL_SUCCESS" in msg:
-                    return {"status": "FAILED" if "Status=FAILED" in msg else "PARTIAL_SUCCESS", "message": msg, "timestamp": ts}
-                return {"status": "SUCCESS", "message": msg, "timestamp": ts}
-            if "CRITICAL" in lvl or "failed" in msg.lower() or "error" in msg.lower() or "aborting" in msg.lower():
-                return {"status": "FAILED", "message": msg, "timestamp": ts}
-            if "SKIPPED" in msg or "skipped" in msg.lower():
-                return {"status": "SKIPPED", "message": msg, "timestamp": ts}
+        # Per-ticker data skips ("SKIP UNH: validation failed ...") are the validation gate doing
+        # its job in isolation. They are not a run outcome and must never read as a failed run.
+        if msg.startswith("SKIP "):
+            continue
+
+        for explicit in ("FAILED", "DEGRADED", "HALTED", "SKIPPED"):
+            if f"Status={explicit}" in msg:
+                return {"status": explicit, "message": msg, "timestamp": ts}
+        if "Pipeline complete" in msg or "Scheduled pipeline run completed" in msg:
+            if "Status=FAILED" in msg or "status: FAILED" in msg or "Status=PARTIAL_SUCCESS" in msg:
+                return {"status": "FAILED" if "Status=FAILED" in msg else "PARTIAL_SUCCESS", "message": msg, "timestamp": ts}
+            return {"status": "SUCCESS", "message": msg, "timestamp": ts}
+        # A real failure is logged at ERROR/CRITICAL level or says the run is aborting.
+        if lvl in ("ERROR", "CRITICAL") or "aborting" in msg.lower():
+            return {"status": "FAILED", "message": msg, "timestamp": ts}
+        if "SKIPPED" in msg or "skipped" in msg.lower():
+            return {"status": "SKIPPED", "message": msg, "timestamp": ts}
 
     return {"status": "NO_RUNS", "message": "No pipeline runs recorded", "timestamp": None}
 
@@ -350,7 +359,7 @@ def get_market_regime_and_predictions(market: str = "US") -> Tuple[Dict[str, Any
                 ),
             }
     except Exception as exc:
-        logger.warning("Failed to fetch live SPY regime in dashboard: %s", exc)
+        logger.warning("Failed to fetch live SPY regime: %s", exc)
         regime_info["explanation"] = f"Offline / Cached mode: {exc}"
 
     # 2. Candidate predictions table
@@ -1231,15 +1240,6 @@ def get_closed_trade_history(market: str = "US") -> Tuple[pd.DataFrame, Dict[str
     export_df = pd.concat([closed_df, pd.DataFrame([summary_row])], ignore_index=True)
 
     return closed_df, summary_metrics, export_df
-
-
-# ── Section 6 Item 3: Live Price Ticker Loaders ──────────────────────────────
-
-from dashboard.live_ticker import (
-    fetch_single_ticker_live_price,
-    get_live_quotes_for_held_stocks,
-    is_us_market_open,
-)
 
 
 @_with_schema

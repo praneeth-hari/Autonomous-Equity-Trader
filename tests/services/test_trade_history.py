@@ -11,7 +11,6 @@ Verifies:
   7. Summary metrics (total trades, total PnL, win rate, avg gain, avg loss, best, worst) compute accurately.
   8. Model score at entry accurately maps to prediction probability on/before buy date.
   9. CSV export DataFrame contains all 10 columns and includes the summary row at the bottom.
- 10. Streamlit AppTest verifies Tab 2 rendering with trade history table and open positions.
 """
 
 from __future__ import annotations
@@ -19,7 +18,7 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from dashboard.data_loader import get_closed_trade_history
+from src.services.data_loader import get_closed_trade_history
 from src.db import repository
 
 
@@ -256,35 +255,14 @@ def test_9_csv_export_format_and_summary_row(clean_db):
     assert "AAPL" in csv_text
 
 
-def test_10_app_test_renders_trade_history_tab(clean_db):
-    """Streamlit AppTest confirms that Tab 2 executes without runtime errors."""
-    from unittest.mock import patch
-    from streamlit.testing.v1 import AppTest
-
-    # Seed sample trade
-    repository.save_trade("2026-09-01", "AAPL", "BUY", 5.0, 150.0, 1.0, 0.0)
-    repository.save_trade("2026-09-05", "AAPL", "SELL", 5.0, 160.0, 1.0, 50.0)
-
-    fake_spy = pd.DataFrame({
-        "date": pd.date_range("2023-01-01", periods=250, freq="B").strftime("%Y-%m-%d"),
-        "open": [400.0] * 250, "high": [405.0] * 250, "low": [395.0] * 250,
-        "close": [402.0] * 250, "volume": [50000000.0] * 250, "ticker": ["SPY"] * 250,
-    })
-
-    with patch("src.data.market_data.fetch_ticker_data", return_value=fake_spy):
-        at = AppTest.from_file("dashboard/app.py", default_timeout=15)
-        at.run()
-        assert len(at.exception) == 0, f"App execution raised exceptions: {at.exception}"
-
-
 def test_risk_reward_column_exists():
-    from dashboard.data_loader import get_closed_trade_history
+    from src.services.data_loader import get_closed_trade_history
     df, _, _ = get_closed_trade_history()
     if not df.empty:
         assert "Risk/Reward" in df.columns
 
 def test_risk_reward_is_numeric():
-    from dashboard.data_loader import get_closed_trade_history
+    from src.services.data_loader import get_closed_trade_history
     df, _, _ = get_closed_trade_history()
     if not df.empty and "Risk/Reward" in df.columns:
         assert pd.to_numeric(df["Risk/Reward"], errors="coerce").notna().all()

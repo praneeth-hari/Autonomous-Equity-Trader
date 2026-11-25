@@ -189,7 +189,7 @@ def test_status_is_derived_for_early_returns():
 
 
 def test_scheduler_event_and_dashboard_show_degraded(fresh_db):
-    from dashboard.data_loader import get_last_pipeline_status
+    from src.services.data_loader import get_last_pipeline_status
 
     with patch.object(sch, "run_daily_pipeline", return_value=_result("DEGRADED", errors=["SKIP MSFT: bad data"])):
         sch.execute_scheduled_job(run_date=D, force=True)

@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
-from dashboard.data_loader import ask_chatbot_trigger
+from src.services.data_loader import ask_chatbot_trigger
 from src.chatbot.local_chat import (
     FRIENDLY_ERROR_MSG,
     ask_local_chatbot,

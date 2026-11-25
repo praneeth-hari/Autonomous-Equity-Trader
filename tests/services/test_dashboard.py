@@ -43,7 +43,7 @@ def clean_db(tmp_path):
 
 def test_1_default_portfolio_summary_clean_db(clean_db):
     """Clean DB should default to settings.initial_capital ($50.00) and zero positions."""
-    from dashboard.data_loader import get_portfolio_summary
+    from src.services.data_loader import get_portfolio_summary
 
     summary = get_portfolio_summary()
     assert summary["cash"] == pytest.approx(settings.initial_capital, abs=1e-4)
@@ -56,7 +56,7 @@ def test_1_default_portfolio_summary_clean_db(clean_db):
 
 def test_2_portfolio_summary_with_positions(clean_db):
     """Snapshot with active positions should correctly compute MTM and reserve %."""
-    from dashboard.data_loader import get_portfolio_summary
+    from src.services.data_loader import get_portfolio_summary
 
     # Save a snapshot with 1 position: 0.0785 AAPL @ $180 entry, now $190
     positions = {
@@ -97,7 +97,7 @@ def test_2_portfolio_summary_with_positions(clean_db):
 
 def test_3_equity_history_df(clean_db):
     """Verifies historical snapshots are parsed chronologically."""
-    from dashboard.data_loader import get_equity_history_df
+    from src.services.data_loader import get_equity_history_df
 
     repository.save_portfolio_snapshot("2023-11-20", 35.84, 49.97)
     repository.save_portfolio_snapshot("2023-11-21", 35.84, 50.75)
@@ -113,7 +113,7 @@ def test_3_equity_history_df(clean_db):
 
 def test_4_trades_and_orders_loaders(clean_db):
     """Verifies trade and order query loaders format DataFrames accurately."""
-    from dashboard.data_loader import get_orders_df, get_recent_trades_df
+    from src.services.data_loader import get_orders_df, get_recent_trades_df
 
     from datetime import datetime
     today_str = datetime.now().strftime("%Y-%m-%d")
@@ -135,7 +135,7 @@ def test_4_trades_and_orders_loaders(clean_db):
 
 def test_5_system_events_loader(clean_db):
     """Verifies system event log loading and formatting."""
-    from dashboard.data_loader import get_system_events_df
+    from src.services.data_loader import get_system_events_df
 
     repository.log_event("INFO", "daily_pipeline", "Pipeline started for 2023-11-20")
     repository.log_event("WARNING", "risk_engine", "Cash reserve low")
@@ -152,7 +152,7 @@ def test_6_regime_and_predictions_loader(clean_db):
     Section 5 added sector, sentiment, and earnings columns to preds_df.
     Test checks that required base columns are present (superset check).
     """
-    from dashboard.data_loader import get_market_regime_and_predictions
+    from src.services.data_loader import get_market_regime_and_predictions
 
     regime, preds = get_market_regime_and_predictions()
     assert "status" in regime
@@ -167,41 +167,9 @@ def test_6_regime_and_predictions_loader(clean_db):
     # We accept them as additive — no regression
 
 
-def test_7_dashboard_app_compiles():
-    """Verifies that dashboard/app.py can be compiled and parsed without syntax errors."""
-    app_path = "d:/ai-stock-trader/dashboard/app.py"
-    with open(app_path, "r", encoding="utf-8") as f:
-        code = f.read()
-    compiled = compile(code, app_path, "exec")
-    assert compiled is not None
-
-
-def test_8_dashboard_app_full_render_execution(clean_db):
-    """
-    Verifies that dashboard/app.py executes its full rendering loop via Streamlit's AppTest.
-    This catches missing imports, NameError, and unhandled runtime exceptions across all tabs.
-    """
-    from streamlit.testing.v1 import AppTest
-
-    fake_spy = pd.DataFrame({
-        "date": pd.date_range("2023-01-01", periods=250, freq="B").strftime("%Y-%m-%d"),
-        "open": [400.0] * 250,
-        "high": [405.0] * 250,
-        "low": [395.0] * 250,
-        "close": [402.0] * 250,
-        "volume": [50000000.0] * 250,
-        "ticker": ["SPY"] * 250,
-    })
-
-    with patch("src.data.market_data.fetch_ticker_data", return_value=fake_spy):
-        at = AppTest.from_file("dashboard/app.py", default_timeout=15)
-        at.run()
-        assert len(at.exception) == 0, f"Dashboard execution raised exceptions: {at.exception}"
-
-
 def test_9_triggers_execution_and_schema(clean_db):
     """Verifies run_daily_paper_cycle_trigger and run_backtest_trigger execute and return correct schema."""
-    from dashboard.data_loader import run_daily_paper_cycle_trigger, run_backtest_trigger
+    from src.services.data_loader import run_daily_paper_cycle_trigger, run_backtest_trigger
     from src.pipeline.daily_pipeline import DailyPipelineResult
     from src.backtest.backtest import BacktestResult, BacktestMetrics
 
@@ -268,7 +236,7 @@ def test_9_triggers_execution_and_schema(clean_db):
 def test_9b_backtest_trigger_never_uses_model_trained_through_test_period():
     """The dashboard backtest must resolve a model trained strictly before start_date, not the active model."""
     import src.backtest.backtest as bt
-    from dashboard.data_loader import run_backtest_trigger
+    from src.services.data_loader import run_backtest_trigger
 
     dates = pd.date_range("2024-02-01", periods=30, freq="B").strftime("%Y-%m-%d").tolist()
     start_date = dates[10]
@@ -301,7 +269,7 @@ def test_9b_backtest_trigger_never_uses_model_trained_through_test_period():
 
 def test_10_v2_model_drift_loader(clean_db):
     """Verifies get_model_drift_summary returns expected fields and handles low data cleanly."""
-    from dashboard.data_loader import get_model_drift_summary
+    from src.services.data_loader import get_model_drift_summary
 
     drift_summary = get_model_drift_summary()
     assert "status" in drift_summary
@@ -314,7 +282,7 @@ def test_10_v2_model_drift_loader(clean_db):
 
 def test_11_v2_portfolio_intelligence_loaders(clean_db):
     """Verifies sector analysis and diversification score loaders return consistent structures."""
-    from dashboard.data_loader import (
+    from src.services.data_loader import (
         get_portfolio_diversification_summary,
         get_portfolio_sectors_summary,
     )

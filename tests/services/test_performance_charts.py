@@ -14,7 +14,6 @@ Verifies:
  10. Sector allocation donut data loader handles 100% cash state.
  11. Sector allocation donut data loader deconstructs active positions into sectors + cash slice totaling 100%.
  12. Sector allocation donut chart builder produces valid Altair arc chart with inner radius.
- 13. End-to-end rendering of the Performance tab in Streamlit AppTest.
 """
 
 from __future__ import annotations
@@ -23,13 +22,7 @@ import pandas as pd
 import pytest
 
 from config.settings import settings
-from dashboard.charts import (
-    build_daily_returns_histogram,
-    build_portfolio_vs_spy_chart,
-    build_sector_allocation_donut,
-    build_win_loss_trade_chart,
-)
-from dashboard.data_loader import (
+from src.services.data_loader import (
     get_daily_returns_histogram_data,
     get_portfolio_vs_spy_chart_data,
     get_sector_allocation_donut_data,
@@ -101,25 +94,6 @@ def test_2_portfolio_vs_spy_underperformance_flag(clean_db):
     assert df["deficit"].iloc[1] == pytest.approx(1200.0, abs=1.0)
 
 
-def test_3_build_portfolio_vs_spy_chart_layers():
-    """Verifies build_portfolio_vs_spy_chart generates a valid Altair layer chart with shading."""
-    df = pd.DataFrame([
-        {"date": "2026-09-10", "My Portfolio": 10000.0, "SPY Benchmark": 10000.0, "underperforming": False, "deficit": 0.0},
-        {"date": "2026-09-11", "My Portfolio": 9500.0, "SPY Benchmark": 10500.0, "underperforming": True, "deficit": 1000.0},
-    ])
-    chart = build_portfolio_vs_spy_chart(df)
-    assert chart is not None
-    json_spec = chart.to_json()
-    assert "Portfolio vs SPY Benchmark" in json_spec
-    # Verify both lines and red underperformance color exist in spec
-    assert "#2962ff" in json_spec  # My Portfolio blue
-    assert "#ff9800" in json_spec  # SPY Benchmark amber
-    assert "#ef5350" in json_spec  # Red underperformance area/points
-
-    # Empty test
-    assert build_portfolio_vs_spy_chart(pd.DataFrame()) is None
-
-
 # ── 2. Daily Returns Histogram Tests ──────────────────────────────────────────
 
 def test_4_daily_returns_histogram_empty_or_single_snapshot(clean_db):
@@ -154,22 +128,6 @@ def test_5_daily_returns_histogram_positive_and_negative_bins(clean_db):
     pos_rows = df[df["sign"] == "Positive"]
     assert len(pos_rows) >= 1
     assert all(r["bin_center"] >= 0 for _, r in pos_rows.iterrows())
-
-
-def test_6_build_daily_returns_histogram_layers():
-    """Verifies build_daily_returns_histogram creates Altair chart with zero rule and color encoding."""
-    df = pd.DataFrame([
-        {"bin_center": -0.8, "bin_label": "-1.0% to -0.6%", "count": 2, "sign": "Negative"},
-        {"bin_center": 0.5, "bin_label": "+0.3% to +0.7%", "count": 5, "sign": "Positive"},
-    ])
-    chart = build_daily_returns_histogram(df)
-    assert chart is not None
-    json_spec = chart.to_json()
-    assert "Distribution of Daily Returns" in json_spec
-    assert "#26a69a" in json_spec  # Green
-    assert "#ef5350" in json_spec  # Red
-
-    assert build_daily_returns_histogram(pd.DataFrame()) is None
 
 
 # ── 3. Win/Loss Trade Bar Chart Tests ─────────────────────────────────────────
@@ -220,22 +178,6 @@ def test_8_win_loss_trades_with_closed_trades(clean_db):
     assert trade_2["sign"] == "Loss"
 
 
-def test_9_build_win_loss_trade_chart():
-    """Verifies build_win_loss_trade_chart compiles with green/red bars and zero rule."""
-    df = pd.DataFrame([
-        {"trade_id": 1, "date": "2026-09-15", "ticker": "AAPL", "net_pnl": 120.0, "sign": "Win", "trade_label": "#1 AAPL (2026-09-15)"},
-        {"trade_id": 2, "date": "2026-09-16", "ticker": "TSLA", "net_pnl": -80.0, "sign": "Loss", "trade_label": "#2 TSLA (2026-09-16)"},
-    ])
-    chart = build_win_loss_trade_chart(df)
-    assert chart is not None
-    json_spec = chart.to_json()
-    assert "Realized PnL per Closed Trade" in json_spec
-    assert "#26a69a" in json_spec  # Green
-    assert "#ef5350" in json_spec  # Red
-
-    assert build_win_loss_trade_chart(pd.DataFrame()) is None
-
-
 # ── 4. Sector Allocation Donut Chart Tests ────────────────────────────────────
 
 def test_10_sector_allocation_donut_empty_db(clean_db):
@@ -279,51 +221,11 @@ def test_11_sector_allocation_donut_with_positions(clean_db):
     assert sum(df["pct"]) == pytest.approx(100.0, abs=0.5)
 
 
-def test_12_build_sector_allocation_donut():
-    """Verifies build_sector_allocation_donut creates an Altair arc chart with innerRadius."""
-    df = pd.DataFrame([
-        {"sector": "Cash Reserve", "value": 5000.0, "pct": 50.0},
-        {"sector": "Technology", "value": 3000.0, "pct": 30.0},
-        {"sector": "Communications", "value": 2000.0, "pct": 20.0},
-    ])
-    chart = build_sector_allocation_donut(df)
-    assert chart is not None
-    json_spec = chart.to_json()
-    assert "Portfolio Sector & Cash Allocation" in json_spec
-    assert '"innerRadius": 65' in json_spec or '"innerRadius":65' in json_spec
-
-    assert build_sector_allocation_donut(pd.DataFrame()) is None
-
-
 # ── 5. End-to-End Streamlit App Test ──────────────────────────────────────────
-
-def test_13_performance_tab_renders_in_app(clean_db):
-    """Verifies that the Performance tab and its charts render through Streamlit AppTest without errors."""
-    from unittest.mock import patch
-    from streamlit.testing.v1 import AppTest
-
-    fake_spy = pd.DataFrame({
-        "date": pd.date_range("2023-01-01", periods=250, freq="B").strftime("%Y-%m-%d"),
-        "open": [400.0] * 250,
-        "high": [405.0] * 250,
-        "low": [395.0] * 250,
-        "close": [402.0] * 250,
-        "volume": [50000000.0] * 250,
-        "ticker": ["SPY"] * 250,
-    })
-
-    with patch("src.data.market_data.fetch_ticker_data", return_value=fake_spy):
-        at = AppTest.from_file("dashboard/app.py", default_timeout=15)
-        at.run()
-        assert len(at.exception) == 0, f"App execution raised exceptions: {at.exception}"
-        # Confirm tab header exists
-        tab_titles = [t.label for t in at.tabs]
-        assert any("Performance" in t for t in tab_titles), f"Performance tab not found in tabs: {tab_titles}"
-
 
 def test_14_performance_metrics_calculation(clean_db):
     """Verifies calculation of Sharpe Ratio, Max Drawdown, Calmar Ratio, Sortino Ratio, Win Rate %, and Profit Factor."""
-    from dashboard.data_loader import get_performance_metrics_data
+    from src.services.data_loader import get_performance_metrics_data
 
     # Empty DB default check
     m_empty = get_performance_metrics_data()
@@ -355,46 +257,16 @@ def test_14_performance_metrics_calculation(clean_db):
 
 
 def test_drawdown_series_returns_dataframe():
-    from dashboard.data_loader import get_drawdown_series
+    from src.services.data_loader import get_drawdown_series
     result = get_drawdown_series()
     assert isinstance(result, pd.DataFrame)
 
 
 # ── Candlestick Chart Tests ──────────────────────────────────────────────────────
 
-def test_15_build_candlestick_chart_structure(clean_db):
-    """Verifies build_candlestick_chart creates a valid Plotly Figure with candlestick and volume traces."""
-    from dashboard.charts import build_candlestick_chart
-
-    ohlcv = pd.DataFrame({
-        "date": pd.date_range("2026-09-01", periods=10, freq="B"),
-        "open": [100.0, 101.0, 102.0, 103.0, 104.0, 105.0, 106.0, 107.0, 108.0, 109.0],
-        "high": [101.0, 102.0, 103.0, 104.0, 105.0, 106.0, 107.0, 108.0, 109.0, 110.0],
-        "low": [99.0, 100.0, 101.0, 102.0, 103.0, 104.0, 105.0, 106.0, 107.0, 108.0],
-        "close": [100.5, 101.5, 102.5, 103.5, 104.5, 105.5, 106.5, 107.5, 108.5, 109.5],
-        "volume": [1_000_000] * 10,
-    })
-
-    fig = build_candlestick_chart(ohlcv, "AAPL")
-    assert fig is not None
-    assert hasattr(fig, "data")
-    # Should have at least candlestick + volume = 2 traces
-    assert len(fig.data) >= 2
-
-    # Check trace types
-    trace_types = [trace.type for trace in fig.data]
-    assert "candlestick" in trace_types
-    assert "bar" in trace_types
-
-    # Check layout properties
-    assert "AAPL" in fig.layout.title.text
-    assert fig.layout.height == 500
-    assert fig.layout.xaxis.rangeslider.visible is False
-
-
 def test_16_get_ohlcv_data_returns_correct_shape(clean_db):
     """Verifies get_ohlcv_data returns correctly shaped DataFrame from DB."""
-    from dashboard.data_loader import get_ohlcv_data
+    from src.services.data_loader import get_ohlcv_data
     from src.db import repository
 
     # Seed market data

@@ -95,7 +95,7 @@ def test_migration_is_idempotent(old_db):
 
 
 def test_dashboard_chart_data_works_against_an_unmigrated_database(old_db):
-    from dashboard.data_loader import get_portfolio_vs_spy_chart_data
+    from src.services.data_loader import get_portfolio_vs_spy_chart_data
 
     df = get_portfolio_vs_spy_chart_data(market="US")          # no explicit migration first
     assert list(df["My Portfolio"]) == [10000.0]

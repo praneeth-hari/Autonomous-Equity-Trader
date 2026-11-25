@@ -154,7 +154,7 @@ def test_lock_is_released_after_a_normal_run_and_after_an_exception(world):
 
 
 def test_scheduler_and_dashboard_are_refused_by_the_same_machine_wide_lock(world):
-    from dashboard.data_loader import run_daily_paper_cycle_trigger
+    from src.services.data_loader import run_daily_paper_cycle_trigger
 
     ready = world["tmp"] / "holder.ready"
     holder = _spawn("hold", world["locks"], "US", ready)

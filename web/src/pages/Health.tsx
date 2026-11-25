@@ -2,6 +2,14 @@ import { useQuery } from '@tanstack/react-query'
 import { Card, Label, Load, PageHeader, Pill } from '../components/ui'
 import { api } from '../lib/api'
 
+/** Only FAILED is red. DEGRADED means some stocks were skipped by the data check, which is by design. */
+function pipelineTone(status: string): 'ok' | 'warn' | 'neutral' | 'bad' {
+  if (status === 'SUCCESS') return 'ok'
+  if (status === 'FAILED') return 'bad'
+  if (status === 'NO_RUNS') return 'neutral'
+  return 'warn' // DEGRADED, PARTIAL_SUCCESS, HALTED, SKIPPED
+}
+
 export function Health() {
   const q = useQuery({ queryKey: ['health'], queryFn: api.health, refetchInterval: 60_000 })
   return (
@@ -13,9 +21,7 @@ export function Health() {
             <Card>
               <Label>Last pipeline run</Label>
               <div className="mt-1">
-                <Pill tone={d.pipeline.status === 'SUCCESS' ? 'ok' : d.pipeline.status === 'NO_RUNS' ? 'neutral' : 'bad'}>
-                  {d.pipeline.status}
-                </Pill>
+                <Pill tone={pipelineTone(d.pipeline.status)}>{d.pipeline.status}</Pill>
               </div>
               <p className="mt-2 text-xs text-muted">{d.pipeline.message}</p>
             </Card>

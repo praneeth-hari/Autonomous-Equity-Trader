@@ -33,10 +33,6 @@ sqlalchemy>=2.0.30
 psycopg[binary]>=3.1.18    # Modern PostgreSQL driver (Supabase default)
 psycopg2-binary>=2.9.9    # PostgreSQL driver (Cloud Supabase)
 
-# ── Dashboard ─────────────────────────────────────────────────────────────────
-streamlit>=1.40.0
-plotly>=5.20.0
-
 # ── Scheduling ────────────────────────────────────────────────────────────────
 apscheduler>=3.10.4
 

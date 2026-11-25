@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from dashboard.data_loader import run_backtest_lab_trigger
+from src.services.data_loader import run_backtest_lab_trigger
 from src.backtest.backtest import DailySnapshot, compute_monthly_returns_heatmap, run_lab_backtest
 
 

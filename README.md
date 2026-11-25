@@ -6,7 +6,7 @@ An ML-driven, risk-first paper-trading platform that ranks US equities, enforces
 
 ![Python](https://img.shields.io/badge/python-3.11-blue)
 ![scikit-learn](https://img.shields.io/badge/ML-scikit--learn%20%7C%20XGBoost%20%7C%20LightGBM-orange)
-![Streamlit](https://img.shields.io/badge/dashboard-Streamlit-red)
+![React](https://img.shields.io/badge/dashboard-React%20%2B%20FastAPI-61dafb)
 ![Tests](https://img.shields.io/badge/tests-pytest-green)
 
 ## Goal
@@ -26,7 +26,7 @@ Every trading day the pipeline:
 3. Scores each stock with an ML model: *probability the stock rises more than 1% over the next 5 trading days*
 4. Adjusts scores with news sentiment, earnings proximity, sector rotation and macro regime
 5. Runs everything through a **risk engine** with veto power (stop-loss, take-profit, position cap, cash reserve, market regime filter)
-6. Simulates fills with transaction costs and slippage, stores everything in a database, and shows it on a dashboard
+6. Simulates fills with transaction costs and slippage, stores everything in a database, and shows it on a local web dashboard
 
 ## Key features
 
@@ -37,7 +37,7 @@ Every trading day the pipeline:
 - **Intelligence layers**: VADER news sentiment, earnings blackout windows, sector rotation ranking, and FRED macro indicators.
 - **Explainability and monitoring**: SHAP explanations per prediction and PSI-based model drift alarms that cut position size or pause buying.
 - **Human-in-the-loop promotion**: models are never auto-promoted; a person reviews the evaluation report and runs the promotion step.
-- **Hands-off operation**: Windows Task Scheduler jobs for the daily run, a morning health check, daily status digest and dashboard launch, with missed-run detection.
+- **Hands-off operation**: Windows Task Scheduler jobs for the daily run, a morning health check, and a daily status digest, with missed-run detection.
 - **Data validation gate**: rejects impossible prices, volatility-aware spike detection, and NYSE-calendar-aware gap checks.
 - **Storage**: SQLAlchemy repository layer with SQLite by default and PostgreSQL by changing one setting.
 
@@ -54,7 +54,7 @@ flowchart LR
     G --> H[Portfolio allocation]
     H --> I[Paper broker]
     I --> J[(Database)]
-    J --> K[Streamlit dashboard]
+    J --> K[Read-only API] --> L[React dashboard]
 ```
 
 ## Strategy parameters
@@ -81,7 +81,7 @@ All defaults live in `config/settings.py` and can be overridden through `.env`.
 | ML | scikit-learn (HistGradientBoosting, Logistic Regression), XGBoost, LightGBM, SHAP, Optuna |
 | NLP / alerts | VaderSentiment, python-telegram-bot, Ollama (local LLM chatbot and sentiment) |
 | Storage | SQLAlchemy, SQLite / PostgreSQL |
-| Dashboard | Streamlit, Plotly |
+| Dashboard | React, Vite, TypeScript, Tailwind, Recharts; read-only FastAPI backend |
 | Scheduling | Windows Task Scheduler (PowerShell), APScheduler |
 | Config / tests | pydantic-settings, python-dotenv, pytest |
 
@@ -100,8 +100,11 @@ Autonomous-Equity-Trader/
 │   ├── trading/     # Paper broker
 │   ├── backtest/    # Day-by-day backtesting engine
 │   ├── pipeline/    # Daily pipeline orchestrator and scheduler
+│   ├── api/         # Read-only FastAPI layer for the dashboard (GET only)
+│   ├── services/    # UI-free data-access functions
+│   ├── llm/         # Local Ollama client (chatbot and sentiment)
 │   └── db/          # ORM models and repository layer
-├── dashboard/       # Streamlit monitoring dashboard
+├── web/             # React dashboard (Vite + TypeScript + Tailwind)
 ├── docs/            # Guides, project plan and technical documentation
 ├── tests/           # pytest suite
 ├── data/            # Raw snapshots, processed data, trained models (git-ignored)
@@ -112,7 +115,7 @@ Autonomous-Equity-Trader/
 
 ### Prerequisites
 - Python 3.11
-- Windows is recommended for the scheduler scripts (`.bat` / `.ps1`). The core pipeline and dashboard run anywhere Python does.
+- Windows is recommended for the scheduler scripts (`.bat` / `.ps1`). The core pipeline and API run anywhere Python does. The dashboard also needs Node.js.
 
 ### Install
 
@@ -142,11 +145,24 @@ Without the optional keys the system degrades gracefully and skips that layer.
 
 ```bash
 python -m src.pipeline.scheduler --force   # run the daily pipeline once
-streamlit run streamlit_app.py             # open the dashboard
 pytest                                     # run the test suite
 ```
 
-Windows helper scripts: `run_trader.bat` (daily run with logging), `run_daily_status.bat`, `run_health_check.bat`, `run_retrain.bat`, `run_weekly_summary.bat`, `start_dashboard.bat`, and `setup_task_scheduler.ps1` (schedule the daily run).
+Dashboard (two terminals; both local only):
+
+```powershell
+# 1. From the project root: the read-only API
+python -m uvicorn src.api.app:app --host 127.0.0.1 --port 8000
+
+# 2. From the web folder: the React app, then open http://127.0.0.1:5173
+cd web; npm install; npm run dev
+```
+
+The Chatbot page needs the Ollama app running with a Llama 3.1 8B model (`OLLAMA_MODEL`); everything stays on your computer.
+
+If your `.env` points `DATABASE_URL` at a cloud database that is unreachable, set it for the API terminal, for example `$env:DATABASE_URL="sqlite:///data/processed/trader.db"`.
+
+Windows helper scripts: `run_trader.bat` (daily run with logging), `run_daily_status.bat`, `run_health_check.bat`, `run_retrain.bat`, `run_weekly_summary.bat`, and `setup_task_scheduler.ps1` (schedule the daily run).
 
 ### Automate (Windows)
 
@@ -154,7 +170,7 @@ Windows helper scripts: `run_trader.bat` (daily run with logging), `run_daily_st
 powershell -ExecutionPolicy Bypass -File .\setup_task_scheduler.ps1
 ```
 
-This registers five tasks: the daily run (Mon-Fri 5:00 PM), a 9:00 AM health check, a startup health check, a dashboard launcher, and a 6:00 PM status digest. Remove them with `remove_task_scheduler.ps1`.
+This registers the daily run (Mon-Fri 5:00 PM), a 9:00 AM health check, a startup health check, and a 6:00 PM status digest, plus the monthly retrain and weekly summary. If an older version of this script left an `AI-Stock-Trader-Dashboard.lnk` shortcut in your Windows Startup folder, delete just that file. Do not run `remove_task_scheduler.ps1` for this: it removes every task above. Remove them with `remove_task_scheduler.ps1`.
 
 ## Results
 

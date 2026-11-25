@@ -28,14 +28,9 @@ from src.ml.importance import (
     save_importances_from_trained_model,
 )
 from src.ml.train import TrainedModel
-from dashboard.data_loader import (
+from src.services.data_loader import (
     get_feature_importance_data,
     get_feature_importance_history_data,
-)
-from dashboard.charts import (
-    build_feature_importance_bar_chart,
-    build_feature_importance_history_chart,
-    build_shap_summary_chart,
 )
 
 
@@ -183,26 +178,6 @@ def test_dashboard_data_loaders(tmp_db):
 
     history_data = get_feature_importance_history_data(model_type="primary", top_n=5, last_n=5)
     assert len(history_data) > 0
-
-
-def test_dashboard_charts_builders():
-    sample_rows = [
-        {"feature_name": "RSI_14", "importance_score": 0.25, "date": "2026-09-19", "model_type": "primary"},
-        {"feature_name": "momentum_20d", "importance_score": 0.15, "date": "2026-09-19", "model_type": "primary"},
-    ]
-
-    chart_bar = build_feature_importance_bar_chart(sample_rows)
-    assert chart_bar is not None
-
-    chart_hist = build_feature_importance_history_chart(sample_rows)
-    assert chart_hist is not None
-
-    shap_rows = [
-        {"feature_name": "RSI_14", "mean_abs_shap": 0.12, "mean_signed_shap": 0.08, "direction": "UP"},
-        {"feature_name": "momentum_20d", "mean_abs_shap": 0.09, "mean_signed_shap": -0.05, "direction": "DOWN"},
-    ]
-    chart_shap = build_shap_summary_chart(shap_rows)
-    assert chart_shap is not None
 
 
 def test_compute_global_shap(mock_feature_data):

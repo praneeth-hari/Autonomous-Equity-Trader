@@ -13,7 +13,7 @@ import logging
 from typing import Dict, List, Optional
 
 from config.settings import settings
-from dashboard.data_loader import (
+from src.services.data_loader import (
     get_market_regime_and_predictions,
     get_portfolio_summary,
     get_recent_trades_df,

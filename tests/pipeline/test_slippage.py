@@ -165,7 +165,7 @@ def test_paper_broker_slippage_execution_and_balance_sheet(isolated_db):
 
 def test_dashboard_data_loader_portfolio_summary_slippage():
     """Verify get_portfolio_summary and get_equity_history_df expose total_slippage_cost."""
-    from dashboard.data_loader import get_equity_history_df, get_portfolio_summary
+    from src.services.data_loader import get_equity_history_df, get_portfolio_summary
 
     summary = get_portfolio_summary()
     assert "total_slippage_cost" in summary

@@ -1,5 +1,7 @@
 # AI Stock Prediction & Paper-Trading System — Master Project Plan (V1)
 
+> **Update 2026-11-25:** the Streamlit dashboard was retired and replaced by a React frontend (`web/`) with a read-only FastAPI layer (`src/api/`). Parts of this document that describe Streamlit, `dashboard/`, `streamlit_app.py` or `start_dashboard.bat` are historical. The data-access code now lives in `src/services/data_loader.py`.
+
 > **Disclaimer.** This system produces probabilistic estimates, **not** guarantees, and nothing here is financial advice. All trading in V1 runs in a **paper (simulated) environment only** — there is no real money and no broker integration. Backtest performance does not guarantee future results. Real-money trading, and the India-vs-US market decision that comes with it, is explicitly **out of scope for V1** and is parked until the "Before Any Live Trading" gate (Section 12).
 
 ---

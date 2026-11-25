@@ -1,5 +1,7 @@
 # Simple Guide — AI Stock Trader (Plain English)
 
+> **Update 2026-11-25:** the Streamlit dashboard was retired and replaced by a React frontend (`web/`) with a read-only FastAPI layer (`src/api/`). Parts of this document that describe Streamlit, `dashboard/`, `streamlit_app.py` or `start_dashboard.bat` are historical. The data-access code now lives in `src/services/data_loader.py`.
+
 A friendly guide to what this system actually does, written without coding jargon.
 
 ---

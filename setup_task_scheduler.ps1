@@ -8,13 +8,11 @@
 #      Runs run_health_check.bat every Mon-Fri at 9:00 AM IST (morning check).
 #   3. AI-Stock-Trader-Startup:
 #      Runs run_health_check.bat immediately when the computer starts up.
-#   4. AI-Stock-Trader-Dashboard:
-#      Runs start_dashboard.bat on startup (with 60-second delay).
-#   5. AI-Stock-Trader-DailyStatus:
+#   4. AI-Stock-Trader-DailyStatus:
 #      Runs run_daily_status.bat every Mon-Fri at 4:00 AM IST (nightly digest, after the trading run).
-#   6. AI-Stock-Trader-Monthly-Retrain:
+#   5. AI-Stock-Trader-Monthly-Retrain:
 #      Runs run_retrain.bat on the first Saturday of each month at 10:00 AM IST.
-#   7. AI-Stock-Trader-Weekly-Summary:
+#   6. AI-Stock-Trader-Weekly-Summary:
 #      Runs run_weekly_summary.bat every Sunday at 9:00 AM IST (weekly digest).
 # =============================================================================
 
@@ -49,13 +47,12 @@ Write-Host "====================================================================
 # Batch file targets (absolute paths)
 $TraderBat    = Join-Path $ScriptDir "run_trader.bat"
 $HealthBat    = Join-Path $ScriptDir "run_health_check.bat"
-$DashboardBat = Join-Path $ScriptDir "start_dashboard.bat"
 $StatusBat    = Join-Path $ScriptDir "run_daily_status.bat"
 $RetrainBat   = Join-Path $ScriptDir "run_retrain.bat"
 $WeeklyBat    = Join-Path $ScriptDir "run_weekly_summary.bat"
 
 # Verify all runner scripts exist
-$RequiredFiles = @($TraderBat, $HealthBat, $DashboardBat, $StatusBat, $RetrainBat, $WeeklyBat)
+$RequiredFiles = @($TraderBat, $HealthBat, $StatusBat, $RetrainBat, $WeeklyBat)
 foreach ($file in $RequiredFiles) {
     if (-not (Test-Path $file)) {
         Write-Error "Required script missing: $file"
@@ -82,12 +79,6 @@ $Tasks = @(
         Description = 'Startup health check on computer boot or logon'
         Schedule    = if ($IsAdmin) { 'onstart' } else { 'onlogon' }
         Target      = $HealthBat
-    },
-    @{
-        Name        = 'AI-Stock-Trader\AI-Stock-Trader-Dashboard'
-        Description = 'Auto-starts Streamlit dashboard in background [delayed 60s]'
-        Schedule    = if ($IsAdmin) { 'onlogon /delay 0001:00' } else { 'onlogon' }
-        Target      = $DashboardBat
     },
     @{
         Name        = 'AI-Stock-Trader\AI-Stock-Trader-DailyStatus'
@@ -143,7 +134,7 @@ foreach ($t in $Tasks) {
         $RegisteredCount++
     } else {
         # If standard user cannot register ONSTART/ONLOGON, create shortcut in user Startup folder
-        if ($tName -like "*Startup*" -or $tName -like "*Dashboard*") {
+        if ($tName -like "*Startup*") {
             try {
                 $baseName = Split-Path -Leaf $tName
                 $shortcutPath = Join-Path $StartupDir "$baseName.lnk"
@@ -203,25 +194,19 @@ Write-Host "   Action   : $HealthBat" -ForegroundColor Gray
 Write-Host "   Purpose  : Immediately checks for missed runs while computer was off" -ForegroundColor Gray
 Write-Host ""
 
-Write-Host "4. AI-Stock-Trader-Dashboard" -ForegroundColor Yellow
-Write-Host "   Schedule : On user logon (delayed 60 seconds)" -ForegroundColor Gray
-Write-Host "   Action   : $DashboardBat" -ForegroundColor Gray
-Write-Host "   Purpose  : Ensures Streamlit UI is running in background at http://localhost:8501" -ForegroundColor Gray
-Write-Host ""
-
-Write-Host "5. AI-Stock-Trader-DailyStatus" -ForegroundColor Yellow
+Write-Host "4. AI-Stock-Trader-DailyStatus" -ForegroundColor Yellow
 Write-Host "   Schedule : Monday-Friday at 4:00 AM IST" -ForegroundColor Gray
 Write-Host "   Action   : $StatusBat" -ForegroundColor Gray
 Write-Host "   Purpose  : Generates plain-English portfolio digest and alerts to console and logs" -ForegroundColor Gray
 Write-Host ""
 
-Write-Host "6. AI-Stock-Trader-Monthly-Retrain" -ForegroundColor Yellow
+Write-Host "5. AI-Stock-Trader-Monthly-Retrain" -ForegroundColor Yellow
 Write-Host "   Schedule : First Saturday of each month at 10:00 AM IST" -ForegroundColor Gray
 Write-Host "   Action   : $RetrainBat" -ForegroundColor Gray
 Write-Host "   Purpose  : Monthly model retraining and evaluation" -ForegroundColor Gray
 Write-Host ""
 
-Write-Host "7. AI-Stock-Trader-Weekly-Summary" -ForegroundColor Yellow
+Write-Host "6. AI-Stock-Trader-Weekly-Summary" -ForegroundColor Yellow
 Write-Host "   Schedule : Every Sunday at 9:00 AM IST" -ForegroundColor Gray
 Write-Host "   Action   : $WeeklyBat" -ForegroundColor Gray
 Write-Host "   Purpose  : Weekly portfolio summary digest via Telegram" -ForegroundColor Gray
@@ -229,7 +214,7 @@ Write-Host "====================================================================
 
 if (-not $IsAdmin) {
     Write-Host ""
-    Write-Host "[TIP] To register Startup & Dashboard tasks with SYSTEM-level highest privileges," -ForegroundColor Cyan
+    Write-Host "[TIP] To register the Startup task with SYSTEM-level highest privileges," -ForegroundColor Cyan
     Write-Host "      run PowerShell as Administrator or execute:" -ForegroundColor Cyan
     Write-Host "      powershell -ExecutionPolicy Bypass -File .\setup_task_scheduler.ps1 -Elevate" -ForegroundColor Gray
 }

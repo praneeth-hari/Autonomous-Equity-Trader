@@ -25,7 +25,7 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 from config.settings import settings
-from dashboard import data_loader as dl
+from src.services import data_loader as dl
 
 logger = logging.getLogger(__name__)
 

@@ -15,11 +15,10 @@ from src.trading.leaderboard import (
     init_default_strategies,
     run_leaderboard_cycle,
 )
-from dashboard.data_loader import (
+from src.services.data_loader import (
     get_leaderboard_equity_curves,
     get_leaderboard_summary_data,
 )
-from dashboard.charts import build_leaderboard_equity_chart
 
 
 @pytest.fixture
@@ -146,7 +145,7 @@ def test_get_leaderboard_rankings(tmp_db):
     assert returns == sorted(returns, reverse=True)
 
 
-def test_dashboard_data_loaders_and_chart_builders(tmp_db):
+def test_leaderboard_data_loaders(tmp_db):
     date_str = "2026-09-19"
     prices = {"AAPL": 220.0, "MSFT": 420.0}
     predictions = {"AAPL": 0.68, "MSFT": 0.62}
@@ -162,5 +161,3 @@ def test_dashboard_data_loaders_and_chart_builders(tmp_db):
     assert "Strategy" in curves_df.columns
     assert "portfolio_value" in curves_df.columns
 
-    chart = build_leaderboard_equity_chart(curves_df)
-    assert chart is not None

@@ -110,7 +110,7 @@ def generate_weekly_summary_data(target_date: Optional[date] = None, market: str
 
     # Trades this week
     try:
-        from dashboard.data_loader import get_recent_trades_df
+        from src.services.data_loader import get_recent_trades_df
         trades_df = get_recent_trades_df(limit=200, market=market)
     except Exception:
         trades_df = pd.DataFrame()

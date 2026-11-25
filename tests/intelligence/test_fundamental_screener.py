@@ -13,8 +13,6 @@ Verifies:
      - Zero imports of src.trading, src.risk, src.portfolio, or src.pipeline.scheduler in src/screening/.
   7. Markdown Report Generator:
      - Includes mandatory disclosures, tier distribution, and 5-pillar breakdown table.
-  8. Dashboard AppTest:
-     - Confirms dashboard/app.py compiles and renders 6 tabs without exceptions.
 """
 
 from __future__ import annotations
@@ -295,7 +293,7 @@ def test_6_strict_architectural_isolation():
 
 @pytest.fixture()
 def clean_db(tmp_path):
-    """Provides an isolated DB for dashboard AppTest."""
+    """Provides an isolated DB for the screener tests."""
     from src.db import repository
     db_file = tmp_path / "test_scr_dash.db"
     db_url = f"sqlite:///{db_file}"
@@ -348,21 +346,3 @@ def test_7_markdown_report_generation(tmp_path):
 
 # ── Test 8: Dashboard Full Render with Tab 6 ──────────────────────────────────
 
-def test_8_dashboard_app_renders_with_tab6(clean_db):
-    """Verifies dashboard/app.py renders all 6 tabs without exceptions via AppTest."""
-    from streamlit.testing.v1 import AppTest
-
-    fake_spy = pd.DataFrame({
-        "date": pd.date_range("2023-01-01", periods=250, freq="B").strftime("%Y-%m-%d"),
-        "open": [400.0] * 250,
-        "high": [405.0] * 250,
-        "low": [395.0] * 250,
-        "close": [402.0] * 250,
-        "volume": [50000000.0] * 250,
-        "ticker": ["SPY"] * 250,
-    })
-
-    with patch("src.data.market_data.fetch_ticker_data", return_value=fake_spy):
-        at = AppTest.from_file("dashboard/app.py", default_timeout=15)
-        at.run()
-        assert len(at.exception) == 0, f"Dashboard execution raised exceptions: {at.exception}"

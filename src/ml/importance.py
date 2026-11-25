@@ -16,7 +16,7 @@ After every save_model() call, call save_importances_from_trained_model() to:
 
 SHAP GLOBAL ANALYSIS (on-demand)
 ---------------------------------
-compute_global_shap(trained_model, background_df) — slow, called from dashboard
+compute_global_shap(trained_model, background_df) — slow, run on demand
 Returns per-feature mean absolute SHAP value + mean signed SHAP for direction.
 """
 

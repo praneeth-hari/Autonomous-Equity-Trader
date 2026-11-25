@@ -9,6 +9,7 @@ param (
     [switch]$Quiet
 )
 
+# Dashboard entries stay so a previously registered Streamlit task is still cleaned up.
 $TaskNames = @(
     "AI-Stock-Trader\AI-Stock-Trader-Daily",
     "AI-Stock-Trader\AI-Stock-Trader-Morning-HealthCheck",
