@@ -203,6 +203,16 @@ def run_health_check() -> int:
     with open(hc_log, "a", encoding="utf-8") as f:
         f.write(f"[{now.strftime('%Y-%m-%d %H:%M:%S')}] Status: {status} | ExitCode: {exit_code} | Alerts: {alerts}\n")
 
+    # Push the result to you. A health check that only prints is how a 3-week outage went unnoticed.
+    # Only CRITICAL (or a missed run) alerts, once per day; sending problems never change the exit code.
+    try:
+        from src.alerts.watchdog import alert_health
+
+        if alert_health(status, alerts, today_str):
+            print(" [i] Alert sent to Telegram.")
+    except Exception as exc:  # noqa: BLE001
+        print(f" [!] Could not send the alert: {exc}")
+
     return exit_code
 
 

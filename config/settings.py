@@ -391,6 +391,15 @@ class Settings(BaseSettings):
         default="",
         description="Human-readable reason logged when the kill switch is active.",
     )
+    human_approval_required: bool = Field(
+        default=False,
+        description="When True, a queued BUY fills only if you approved it in the dashboard (no decision = no buy). "
+                    "SELLs are never held back. Off by default so the frozen V1 behaviour is unchanged.",
+    )
+    healthcheck_ping_url: str = Field(
+        default="",
+        description="Ping URL of your healthchecks.io check (dead man's switch). Empty = off. Treat it like a secret.",
+    )
 
     # PSI drift protocol (Item 9)
     psi_monitor_threshold: float = Field(

@@ -7,12 +7,14 @@ pytz>=2024.1
 yfinance>=0.2.50
 alpha_vantage>=2.3.1
 requests>=2.31.0
+exchange_calendars>=4.5    # the real NYSE trading calendar (holidays, Good Friday, one-off closures)
 
 # ── Technical indicators ──────────────────────────────────────────────────────
 ta>=0.11.0
 
 # ── Machine learning & Tuning ─────────────────────────────────────────────────
 scikit-learn>=1.5.0
+skops>=0.10                 # safe model format: a copy that cannot run code when loaded (src/ops/model_safe.py)
 xgboost>=2.1.0
 lightgbm>=4.5.0
 shap>=0.46.0
@@ -27,9 +29,11 @@ python-telegram-bot>=20.0
 
 # ── Reports & PDF generation ─────────────────────────────────────────────────
 reportlab>=4.0.0
+quantstats>=0.0.80          # performance tear sheet against SPY (src/reports/tearsheet.py)
 
 # ── Database ──────────────────────────────────────────────────────────────────
 sqlalchemy>=2.0.30
+pandera>=0.20               # declared rules for stored price data (src/data/schemas.py, src/ops/data_audit.py)
 psycopg[binary]>=3.1.18    # Modern PostgreSQL driver (Supabase default)
 psycopg2-binary>=2.9.9    # PostgreSQL driver (Cloud Supabase)
 

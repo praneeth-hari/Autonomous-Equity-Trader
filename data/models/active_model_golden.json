@@ -1,0 +1,13 @@
+{
+  "model_sha256": "09a8f688630438e200519d246008918a947d4208295ad7da54fd9256588963dc",
+  "sklearn_version": "1.9.0",
+  "note": "Predictions of the frozen model on 6 fixed random inputs (seed 42). The pre-flight check compares against these.",
+  "expected": [
+    6.706974e-06,
+    0.722222929204,
+    0.999985592333,
+    0.458122828109,
+    0.049987923713,
+    0.0
+  ]
+}
