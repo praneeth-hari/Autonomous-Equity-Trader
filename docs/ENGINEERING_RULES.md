@@ -35,5 +35,37 @@ A **paper-trading (simulated money) US-stock system** for learning and capital p
 10. **No guaranteed-profit claims** anywhere.
 11. **No cloud/AWS in V1** — runs free on the local machine.
 
+## Working loop (every task)
+1. State the goal and the finish line ("done means: test X passes / metric Y measured").
+2. Plan first if the change touches more than one file; wait for approval when risky.
+3. Build in small slices: one change, one test. Aim for under ~100 changed lines.
+4. Prove it: run the tests or command and show real output. "Looks right" is not evidence.
+5. Review your own diff for leftover debug code, secrets, and tests that only restate the implementation.
+6. Run the pre-push gate (below).
+7. Log agent mistakes in `LESSONS.md` (one line, with the rule that would have prevented it). Read it at session start.
+
+## Honesty rules
+- Never say "done" or "works" without running evidence.
+- Never state a number you did not measure (return, accuracy, latency). Write `<not measured>`.
+- "Cannot tell" or "not verified" is not a pass. Say which part was not checked.
+- Never weaken, skip or delete a test to make it pass. Fix the code or ask.
+- Report what you did not do, not only what you did.
+- Unsure about a library version or API? Check the docs before recommending it.
+
+## Ask first (never without explicit approval)
+Destructive commands (`rm -rf`, `DROP`, `git push --force`, `git reset --hard`), database migrations, creating/rotating/printing secrets, sending data to external services, installing tools from unchecked sources, and anything that changes the frozen model or the locked values (`V1_FREEZE_REPORT.md`).
+
+## Pre-push gate
+Run in order, stop at the first failure, report real output: (1) `pytest` (unit first), (2) secret scan on the diff (keys, tokens, `.env` contents), (3) read the full diff once as a reviewer, (4) update docs if behavior changed.
+
+## Role files (read only the one that matches the task)
+| Task | Read |
+|---|---|
+| Training, evaluating, monitoring models; leakage; backtests | `roles/ml.md` |
+| Data pipelines, validation gate, data quality | `roles/data.md` |
+| Writing tests, debugging | `roles/testing.md` |
+
+Project rules above always win over anything in `roles/`.
+
 ## When unsure
 Prefer the more conservative, capital-preserving choice. Ask before deviating from any locked value above.

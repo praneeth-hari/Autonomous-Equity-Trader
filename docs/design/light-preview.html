@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Paper Trader - design preview</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--line:#e6e8ec;--ink:#14171f;--mut:#6b7280;--faint:#8a909c;--g:#12a066;--gbg:#e7f7ef;--gt:#0b6b43;--r:#d6403f;--amber:#b7791f}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 Inter,system-ui,-apple-system,Segoe UI,sans-serif}
+.app{display:flex;min-height:100vh}
+aside{width:210px;background:#fff;border-right:1px solid var(--line);padding:20px 14px;position:sticky;top:0;height:100vh}
+.logo{display:flex;gap:10px;align-items:center;font-weight:600;margin:0 8px 22px}.logo i{width:26px;height:26px;border-radius:8px;background:var(--g);display:block}
+nav button{display:block;width:100%;text-align:left;border:0;background:none;padding:10px 12px;border-radius:10px;color:#5b6270;font:inherit;cursor:pointer;margin-bottom:2px;transition:background .15s}
+nav button:hover{background:#f1f3f6}nav button.on{background:var(--gbg);color:var(--gt);font-weight:500}
+.note{margin:24px 10px 0;font-size:12px;color:var(--faint)}
+main{flex:1;padding:28px 34px;max-width:1180px}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+h1{font-size:22px;margin:0;font-weight:600;letter-spacing:-.3px}.sub{color:var(--mut);font-size:13px}
+.pill{padding:6px 12px;border-radius:99px;font-size:12px;background:#eceef2;color:#5b6270;margin-left:8px}.pill.ok{background:var(--gbg);color:var(--gt)}
+.grid{display:grid;gap:16px}.c2{grid-template-columns:1.8fr 1fr}.c3{grid-template-columns:repeat(3,1fr)}.c4{grid-template-columns:repeat(4,1fr)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.lab{font-size:12px;color:var(--mut)}.big{font-size:38px;font-weight:600;letter-spacing:-1px}.num{font-variant-numeric:tabular-nums;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.up{color:var(--g)}.dn{color:var(--r)}.warn{color:var(--amber);font-size:12px}
+table{width:100%;border-collapse:collapse}th{font-weight:500;font-size:12px;color:var(--mut);text-align:left;padding:8px 6px;border-bottom:1px solid var(--line)}td{padding:11px 6px;border-bottom:1px solid #f0f2f5}tr:hover td{background:#fafbfc}
+.bar{height:7px;background:#eef0f3;border-radius:99px;overflow:hidden;margin-top:10px}.bar b{display:block;height:100%;background:var(--g)}
+.page{display:none;animation:in .25s ease}.page.on{display:block}@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.leg{display:flex;gap:18px;font-size:12px;color:var(--mut);margin-top:6px;align-items:center}.leg i{display:inline-block;width:14px;height:3px;background:var(--g);margin-right:6px;vertical-align:middle}.leg i.s{background:none;border-top:2px dashed #b3b9c4;height:0}
+.tag{font-size:11px;padding:2px 8px;border-radius:99px}.tag.h{background:var(--gbg);color:var(--gt)}.tag.k{background:#fdf3dd;color:var(--amber)}.tag.v{background:#eceef2;color:#5b6270}
+@media(max-width:900px){aside{display:none}.c2,.c3,.c4{grid-template-columns:1fr}}
+</style></head><body><div class="app">
+<aside><div class="logo"><i></i>Paper Trader</div>
+<nav><button class="on" data-p="ov">Overview</button><button data-p="pf">Portfolio</button><button data-p="tr">Trades</button><button data-p="sg">Signals</button><button data-p="bt">Backtests</button><button data-p="hl">Health</button></nav>
+<div class="note">Paper trading only. No real money. Design preview with sample data.</div></aside>
+<main>
+<section class="page on" id="ov"><header><div><div class="sub">Overview</div><h1>Good morning</h1></div><div><span class="pill ok">Market healthy</span><span class="pill">Model frozen</span></div></header>
+<div class="grid c2" style="margin-bottom:16px"><div class="card"><div class="lab">Total value</div><div><span class="big num">$10,000.00</span> <span class="up num">+0.00%</span> <span class="lab">&nbsp;SPY +0.00%</span></div>
+<svg viewBox="0 0 700 220" width="100%" style="margin-top:8px"><g stroke="#eef0f3"><line x1="0" y1="55" x2="700" y2="55"/><line x1="0" y1="110" x2="700" y2="110"/><line x1="0" y1="165" x2="700" y2="165"/></g>
+<path d="M0,160 C80,150 150,105 230,112 S380,140 470,88 S630,55 700,48 L700,220 L0,220Z" fill="#e7f7ef"/><path d="M0,160 C80,150 150,105 230,112 S380,140 470,88 S630,55 700,48" fill="none" stroke="#12a066" stroke-width="2.5"/>
+<path d="M0,164 C100,156 170,134 250,126 S400,110 490,100 S640,80 700,66" fill="none" stroke="#b3b9c4" stroke-width="2" stroke-dasharray="6 5"/></svg>
+<div class="leg"><span><i></i>Strategy, net of costs</span><span><i class="s"></i>SPY buy-and-hold</span><span class="warn" style="margin-left:auto">Optimistic: real results likely worse</span></div></div>
+<div class="grid" style="grid-template-rows:1fr 1fr"><div class="card"><div class="lab">Cash</div><div style="font-size:26px;font-weight:600" class="num">100%</div><div class="bar"><b style="width:100%"></b></div></div><div class="card"><div class="lab">Max drawdown</div><div style="font-size:26px;font-weight:600" class="num">0.0%</div><div class="lab" style="margin-top:6px">Stop-loss at -8%</div></div></div></div>
+<div class="grid c2"><div class="card"><div class="lab" style="margin-bottom:6px">Open positions</div><table><tr><th>Ticker</th><th>P(rise)</th><th>P/L</th><th>Stop / target</th></tr>
+<tr><td><b>AAPL</b></td><td class="num">0.64</td><td class="num up">+2.1%</td><td class="num lab">-8% / +15%</td></tr><tr><td><b>JNJ</b></td><td class="num">0.61</td><td class="num dn">-1.4%</td><td class="num lab">-8% / +15%</td></tr><tr><td><b>XOM</b></td><td class="num">0.62</td><td class="num up">+0.6%</td><td class="num lab">-8% / +15%</td></tr></table></div>
+<div class="card"><div class="lab" style="margin-bottom:8px">Latest decisions</div><p><span class="tag h">Hold</span> AAPL, above exit bar</p><p><span class="tag k">Skip</span> NVDA, earnings in 2 days</p><p><span class="tag v">Veto</span> TSLA, below 0.60</p></div></div></section>
+
+<section class="page" id="pf"><header><div><div class="sub">Portfolio</div><h1>Holdings</h1></div></header><div class="grid c3" style="margin-bottom:16px"><div class="card"><div class="lab">Invested</div><div class="big num" style="font-size:28px">$0</div></div><div class="card"><div class="lab">Cash reserve</div><div class="big num" style="font-size:28px">15%+</div></div><div class="card"><div class="lab">Positions</div><div class="big num" style="font-size:28px">3 max</div></div></div>
+<div class="card"><div class="lab">Allocation by sector (sample)</div><div class="bar" style="height:14px"><b style="width:38%;display:inline-block"></b><b style="width:30%;display:inline-block;background:#7c9cff"></b><b style="width:32%;display:inline-block;background:#f0b44c"></b></div><div class="leg"><span>Technology 38%</span><span>Health care 30%</span><span>Energy 32%</span></div></div></section>
+
+<section class="page" id="tr"><header><div><div class="sub">Trades</div><h1>Trade history</h1></div></header><div class="card"><table><tr><th>Date</th><th>Ticker</th><th>Side</th><th>Price</th><th>Cost (0.2%)</th><th>Reason</th></tr>
+<tr><td class="num">2026-11-18</td><td><b>AAPL</b></td><td>Buy</td><td class="num">$228.40</td><td class="num">$0.60</td><td class="lab">P 0.64 above buy bar</td></tr>
+<tr><td class="num">2026-11-12</td><td><b>MSFT</b></td><td>Sell</td><td class="num">$431.10</td><td class="num">$0.58</td><td class="lab">Take-profit +15%</td></tr>
+<tr><td class="num">2026-11-05</td><td><b>UPS</b></td><td>Sell</td><td class="num">$118.90</td><td class="num">$0.55</td><td class="lab">Stop-loss -8%</td></tr></table></div></section>
+
+<section class="page" id="sg"><header><div><div class="sub">Signals</div><h1>Today's rankings</h1></div></header><div class="card"><table><tr><th>Ticker</th><th>Model P</th><th>Final P</th><th>Action</th></tr>
+<tr><td><b>AAPL</b></td><td class="num">0.62</td><td class="num">0.64</td><td><span class="tag h">Buy</span></td></tr><tr><td><b>NVDA</b></td><td class="num">0.66</td><td class="num">0.66</td><td><span class="tag k">Skip: earnings</span></td></tr><tr><td><b>TSLA</b></td><td class="num">0.55</td><td class="num">0.55</td><td><span class="tag v">Dead zone</span></td></tr></table></div></section>
+
+<section class="page" id="bt"><header><div><div class="sub">Backtests</div><h1>Strategy vs SPY</h1></div></header><div class="card" style="margin-bottom:16px"><table><tr><th>Period</th><th>Strategy CAGR</th><th>SPY buy-and-hold</th><th>Max drawdown</th></tr><tr><td>2007-2016</td><td class="num">1.09%</td><td class="num">4.66%</td><td class="num">-20.7%</td></tr><tr><td>2017-2026</td><td class="num">1.26%</td><td class="num">13.40%</td><td class="num">-31.4%</td></tr></table></div><div class="warn">Net of 0.2% per trade. Optimistic: real results likely worse. Figures from the V1 freeze report.</div></section>
+
+<section class="page" id="hl"><header><div><div class="sub">Health</div><h1>System health</h1></div></header><div class="grid c4"><div class="card"><div class="lab">Last run</div><div class="num">17:00</div></div><div class="card"><div class="lab">Data skips</div><div class="num">0</div></div><div class="card"><div class="lab">Model hash</div><div class="up">Matches</div></div><div class="card"><div class="lab">Drift (PSI)</div><div class="lab">Not active in V1</div></div></div></section>
+</main></div>
+<script>document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button,.page').forEach(e=>e.classList.remove('on'));b.classList.add('on');document.getElementById(b.dataset.p).classList.add('on')})</script>
+</body></html>
