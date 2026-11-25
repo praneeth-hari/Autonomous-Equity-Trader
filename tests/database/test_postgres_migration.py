@@ -322,7 +322,10 @@ def test_persisted_kill_switch_enforced_by_pipeline(isolated_db):
         assert result.status == "HALTED"
         assert result.regime == "KILL_SWITCH_ACTIVE"
         assert any("Persisted dashboard veto" in err for err in result.errors)
-        assert settings.kill_switch_enabled is True
+        # The persisted switch is read fresh on every run and is NOT copied into `settings` (that copy was a bug: in a
+        # long-running process, switching it off in the dashboard would never resume trading). Only an environment
+        # override lives in `settings`.
+        assert settings.kill_switch_enabled is False
     finally:
         repository.save_kill_switch_state(False, "")
         settings.kill_switch_enabled = orig_ks

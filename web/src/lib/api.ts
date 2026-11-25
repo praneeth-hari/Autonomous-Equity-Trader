@@ -102,11 +102,28 @@ export interface Backtests {
   periods: { period: string; strategy: Stats; spy_buy_hold: Stats; spy_above_200d: Stats }[]
 }
 
+export interface RunDay {
+  date: string
+  outcome: 'SUCCESS' | 'DEGRADED' | 'HALTED' | 'FAILED' | 'MISSED' | 'UNKNOWN'
+}
+
+export interface OpsSummary {
+  run_history: RunDay[]
+  missed_days: string[]
+  backups: { supported: boolean; count?: number; newest?: string; age_hours?: number; size_mb?: number; stale?: boolean; message?: string }
+  environment: { ok: boolean; problems: string[]; warnings: string[]; info: string[] }
+  data_skips: { date: string | null; skipped: { ticker: string; reason: string }[]; message?: string }
+  data_quality: { checked: number; problems: { ticker: string; issues: string[] }[]; message?: string }
+  kill_switch: { enabled: boolean | null; reason: string }
+  alerts: { telegram_configured: boolean; heartbeat_configured: boolean }
+}
+
 export interface Health {
   pipeline: { status: string; message: string; timestamp: string | null }
   model: { file_found: boolean; matches_freeze: boolean; frozen: boolean }
   drift: { status: string; recommendation: string; sample_size_live: number }
   psi_note: string
+  ops: OpsSummary
 }
 
 async function get<T>(path: string): Promise<T> {
@@ -214,7 +231,7 @@ export interface ChatReply {
 async function post<T>(path: string, body: unknown): Promise<T> {
   const res = await fetch(path, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'paper-trader' },
     body: JSON.stringify(body),
   })
   if (!res.ok) {
@@ -228,6 +245,35 @@ async function post<T>(path: string, body: unknown): Promise<T> {
     throw new Error(detail)
   }
   return res.json() as Promise<T>
+}
+
+export interface QueuedOrder {
+  id: string
+  date: string
+  ticker: string
+  action: 'BUY' | 'SELL'
+  shares: number
+  price: number
+  value: number
+  reason: string
+  requires_approval: boolean
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'AUTO'
+}
+
+export interface Approvals {
+  approval_required: boolean
+  run_date: string | null
+  orders: QueuedOrder[]
+  how_it_works: string[]
+  enable_hint: string
+}
+
+export interface KillSwitch {
+  enabled: boolean | null
+  reason: string
+  env_override: boolean
+  effective: boolean
+  warning: string
 }
 
 export const api = {
@@ -246,4 +292,8 @@ export const api = {
   signals: () => get<Signals>('/api/signals'),
   backtests: () => get<Backtests>('/api/backtests'),
   health: () => get<Health>('/api/health'),
+  approvals: () => get<Approvals>('/api/approvals'),
+  decide: (id: string, action: 'approve' | 'reject') => post<Approvals>(`/api/approvals/${encodeURIComponent(id)}/${action}`, {}),
+  killSwitch: () => get<KillSwitch>('/api/kill-switch'),
+  setKillSwitch: (enabled: boolean, reason: string) => post<KillSwitch>('/api/kill-switch', { enabled, reason }),
 }

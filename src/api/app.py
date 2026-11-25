@@ -1,5 +1,5 @@
 """
-src/api/app.py — Read-only FastAPI layer for the new frontend.
+src/api/app.py — FastAPI layer for the web frontend (mostly read-only; see ops_routes.py for the few that change state).
 
 Project rules:
   * Read-only: every endpoint reads. The single POST, /api/chat, only asks the local LLM a question
@@ -31,6 +31,8 @@ from src.chatbot.local_chat import FRIENDLY_ERROR_MSG, ask_local_chatbot
 from src.llm import ollama_client
 from src.services import data_loader as dl
 from src.services import market_service as ms
+from src.services import ops_status
+from src.api.ops_routes import ALLOWED_ORIGINS, router as ops_router
 
 logger = logging.getLogger(__name__)
 
@@ -60,10 +62,12 @@ app = FastAPI(
 )
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
+
+app.include_router(ops_router)
 
 
 def _clean(value: Any) -> Any:
@@ -237,6 +241,7 @@ def health() -> Dict[str, Any]:
         "model": _model_hash_status(),
         "drift": dl.get_model_drift_summary(),
         "psi_note": "PSI drift protection is not active in V1 (see V1_FREEZE_REPORT.md).",
+        "ops": ops_status.summary(),
     }))
 
 

@@ -3,6 +3,7 @@ import { useEffect, useState, type ComponentType } from 'react'
 import { SearchPalette } from './components/SearchPalette'
 import { TopNav } from './components/TopNav'
 import { useRoute } from './lib/router'
+import { Approvals } from './pages/Approvals'
 import { Backtests } from './pages/Backtests'
 import { Chat } from './pages/Chat'
 import { Dashboard } from './pages/Dashboard'
@@ -26,6 +27,7 @@ const pages: Record<string, ComponentType<{ param?: string }>> = {
   trades: Trades,
   performance: Performance,
   signals: Signals,
+  approvals: Approvals,
   backtests: Backtests,
   health: Health,
   chat: Chat,
@@ -56,7 +58,7 @@ export default function App() {
       <main className="mx-auto max-w-6xl px-5 pb-20 md:px-8">
         <AnimatePresence mode="wait">
           <motion.div key={`${name}/${route.param ?? ''}`} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}>
-            {['overview', 'portfolio', 'trades', 'performance', 'signals', 'backtests', 'health', 'chat'].includes(name) ? (
+            {['overview', 'portfolio', 'trades', 'performance', 'signals', 'approvals', 'backtests', 'health', 'chat'].includes(name) ? (
               <div className="pt-8">
                 <View param={route.param} />
               </div>

@@ -15,6 +15,7 @@ export const ACCOUNT = [
   { id: 'portfolio', label: 'Portfolio' },
   { id: 'trades', label: 'Trades' },
   { id: 'performance', label: 'Performance' },
+  { id: 'approvals', label: 'Approvals' },
   { id: 'signals', label: 'Signals' },
   { id: 'backtests', label: 'Backtests' },
   { id: 'chat', label: 'Chatbot' },

@@ -133,3 +133,13 @@ def test_performance_failing_reader_returns_503():
     with patch.object(api_module.dl, "get_drawdown_series", side_effect=RuntimeError("no equity")):
         r = client.get("/api/performance")
     assert r.status_code == 503 and "no equity" in r.json()["detail"]
+
+
+def test_health_includes_the_operations_summary_without_secrets():
+    body = client.get("/api/health").json()
+    ops = body["ops"]
+    assert {"run_history", "missed_days", "backups", "environment", "data_skips", "data_quality", "kill_switch", "alerts"} <= set(ops)
+    assert set(ops["alerts"]) == {"telegram_configured", "heartbeat_configured"}
+    text = str(body)
+    for needle in ("bot_token", "api_key", "password", "AAF"):
+        assert needle not in text
