@@ -31,6 +31,17 @@ def is_local_url(url: str) -> bool:
     return (urlparse(url).hostname or "").lower() in _LOCAL_HOSTS
 
 
+def is_available(base_url: Optional[str] = None, timeout: float = 2.0) -> bool:
+    """True when the local Ollama server answers. Never raises; never contacts a non-local host."""
+    url = str(base_url or settings.ollama_base_url).strip().rstrip("/")
+    if not is_local_url(url):
+        return False
+    try:
+        return requests.get(f"{url}/api/tags", timeout=timeout).ok
+    except Exception:  # noqa: BLE001 - "not reachable" is the answer
+        return False
+
+
 def chat(
     messages: List[Dict[str, str]],
     *,

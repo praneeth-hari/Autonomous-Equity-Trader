@@ -79,3 +79,21 @@ def test_ask_chatbot_trigger_wrapper():
         reply = ask_chatbot_trigger("What is my win rate?")
         assert reply == "Your win rate is 62.5%!"
         mock_ask.assert_called_once()
+
+
+def test_is_available_true_when_server_answers_and_never_raises():
+    from src.llm import ollama_client
+
+    ok = MagicMock(ok=True)
+    with patch("src.llm.ollama_client.requests.get", return_value=ok):
+        assert ollama_client.is_available() is True
+    with patch("src.llm.ollama_client.requests.get", side_effect=ConnectionError("refused")):
+        assert ollama_client.is_available() is False
+
+
+def test_is_available_never_contacts_non_local_host():
+    from src.llm import ollama_client
+
+    with patch("src.llm.ollama_client.requests.get") as get:
+        assert ollama_client.is_available(base_url="https://api.example.com") is False
+    get.assert_not_called()

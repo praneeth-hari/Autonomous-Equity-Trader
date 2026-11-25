@@ -1,10 +1,12 @@
 import clsx from 'clsx'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Activity, Briefcase, ChartLine, LayoutDashboard, ListChecks, Radar } from 'lucide-react'
+import { Activity, Briefcase, ChartLine, Gauge, LayoutDashboard, ListChecks, MessageCircle, Radar } from 'lucide-react'
 import { useEffect, useState, type ComponentType } from 'react'
 import { Backtests } from './pages/Backtests'
+import { Chat } from './pages/Chat'
 import { Health } from './pages/Health'
 import { Overview } from './pages/Overview'
+import { Performance } from './pages/Performance'
 import { Portfolio } from './pages/Portfolio'
 import { Signals } from './pages/Signals'
 import { Trades } from './pages/Trades'
@@ -13,9 +15,11 @@ const pages = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard, view: Overview },
   { id: 'portfolio', label: 'Portfolio', icon: Briefcase, view: Portfolio },
   { id: 'trades', label: 'Trades', icon: ListChecks, view: Trades },
+  { id: 'performance', label: 'Performance', icon: Gauge, view: Performance },
   { id: 'signals', label: 'Signals', icon: Radar, view: Signals },
   { id: 'backtests', label: 'Backtests', icon: ChartLine, view: Backtests },
   { id: 'health', label: 'Health', icon: Activity, view: Health },
+  { id: 'chat', label: 'Chatbot', icon: MessageCircle, view: Chat },
 ] satisfies { id: string; label: string; icon: ComponentType<{ size?: number }>; view: ComponentType }[]
 
 const fromHash = () => pages.find((p) => `#${p.id}` === window.location.hash)?.id ?? 'overview'

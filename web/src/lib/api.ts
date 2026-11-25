@@ -123,7 +123,66 @@ async function get<T>(path: string): Promise<T> {
   return res.json() as Promise<T>
 }
 
+export interface ClosedTrade {
+  date_bought: string
+  date_sold: string
+  ticker: string
+  entry_price: number
+  exit_price: number
+  shares: number
+  pnl: number
+  pnl_pct: number
+  exit_reason: string
+  model_score: number | null
+}
+
+export interface Performance {
+  sample_days: number
+  enough_history: boolean
+  min_days: number
+  metrics: Record<string, number>
+  drawdown: { date: string; drawdown_pct: number }[]
+  daily_returns: { bin_center: number; bin_label: string; count: number; sign: string }[]
+  win_loss: { trade_id: number; date: string; ticker: string; net_pnl: number; sign: string; trade_label: string }[]
+  sectors: { sector: string; value: number; pct: number }[]
+  closed_summary: Record<string, number>
+  closed_trades: ClosedTrade[]
+  label: string
+}
+
+export interface ChatTurn {
+  role: 'user' | 'assistant'
+  content: string
+}
+
+export interface ChatReply {
+  reply: string
+  ok: boolean
+}
+
+async function post<T>(path: string, body: unknown): Promise<T> {
+  const res = await fetch(path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  if (!res.ok) {
+    let detail = res.statusText
+    try {
+      const j = await res.json()
+      detail = typeof j.detail === 'string' ? j.detail : JSON.stringify(j.detail)
+    } catch {
+      /* keep statusText */
+    }
+    throw new Error(detail)
+  }
+  return res.json() as Promise<T>
+}
+
 export const api = {
+  performance: () => get<Performance>('/api/performance'),
+  chatStatus: () => get<{ available: boolean; model: string; local_only: boolean }>('/api/chat/status'),
+  chat: (message: string, history: ChatTurn[]) => post<ChatReply>('/api/chat', { message, history: history.slice(-6) }),
   status: () => get<Status>('/api/status'),
   overview: () => get<Overview>('/api/overview'),
   portfolio: () => get<{ summary: Summary; stop_loss_pct: number; take_profit_pct: number }>('/api/portfolio'),

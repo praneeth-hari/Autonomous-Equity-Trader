@@ -2,7 +2,9 @@
 src/api/app.py — Read-only FastAPI layer for the new frontend.
 
 Rules (see docs/ENGINEERING_RULES.md):
-  * Read-only: GET endpoints only. No trading, no broker, no model promotion.
+  * Read-only: every endpoint reads. The single POST, /api/chat, only asks the local LLM a question
+    (it changes no state). No trading, no broker, no model promotion.
+)
   * Local only: CORS allows the Vite dev server on localhost, nothing else.
   * Net, never gross: every backtest payload carries the SPY comparison and the
     "optimistic" label.
@@ -23,8 +25,11 @@ from typing import Any, Callable, Dict, List
 import pandas as pd
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field
 
 from config.settings import settings
+from src.chatbot.local_chat import FRIENDLY_ERROR_MSG, ask_local_chatbot
+from src.llm import ollama_client
 from src.services import data_loader as dl
 
 logger = logging.getLogger(__name__)
@@ -56,7 +61,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
-    allow_methods=["GET"],
+    allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
 
@@ -144,6 +149,41 @@ def portfolio() -> Dict[str, Any]:
     return _safe("portfolio", build)
 
 
+MIN_DAYS_FOR_RATIOS = 30  # project rule: flag small samples (N < 30); ratios on a few days are noise
+
+
+@app.get("/api/performance")
+def performance() -> Dict[str, Any]:
+    def build() -> Dict[str, Any]:
+        equity = dl.get_equity_history_df("US")
+        days = int(len(equity))
+        closed, summary, _export = dl.get_closed_trade_history("US")
+        closed_rows = [
+            {
+                "date_bought": r["Date Bought"], "date_sold": r["Date Sold"], "ticker": r["Ticker"],
+                "entry_price": r["Entry Price"], "exit_price": r["Exit Price"], "shares": r["Shares"],
+                "pnl": r["Profit / Loss ($)"], "pnl_pct": r["Profit / Loss (%)"], "exit_reason": r["Exit Reason"],
+                "model_score": r["Model Score at Entry"],
+            }
+            for r in _records(closed)
+        ]
+        return _clean({
+            "sample_days": days,
+            "enough_history": days >= MIN_DAYS_FOR_RATIOS,
+            "min_days": MIN_DAYS_FOR_RATIOS,
+            "metrics": dl.get_performance_metrics_data("US"),
+            "drawdown": _records(dl.get_drawdown_series("US")),
+            "daily_returns": _records(dl.get_daily_returns_histogram_data(15, "US")),
+            "win_loss": _records(dl.get_win_loss_trades_chart_data(200, "US")),
+            "sectors": _records(dl.get_sector_allocation_donut_data("US")),
+            "closed_summary": summary,
+            "closed_trades": closed_rows,
+            "label": OPTIMISTIC_LABEL,
+        })
+
+    return _safe("performance", build)
+
+
 @app.get("/api/trades")
 def trades(limit: int = Query(50, ge=1, le=500)) -> Dict[str, Any]:
     return _safe("trades", lambda: {
@@ -198,3 +238,30 @@ def health() -> Dict[str, Any]:
         "drift": dl.get_model_drift_summary(),
         "psi_note": "PSI drift protection is not active in V1 (see V1_FREEZE_REPORT.md).",
     }))
+
+
+class ChatTurn(BaseModel):
+    role: str = Field(pattern="^(user|assistant)$")
+    content: str = Field(max_length=4000)
+
+
+class ChatRequest(BaseModel):
+    message: str = Field(min_length=1, max_length=2000)
+    history: List[ChatTurn] = Field(default_factory=list, max_length=12)
+
+
+@app.get("/api/chat/status")
+def chat_status() -> Dict[str, Any]:
+    """Is the local model server reachable? (The model itself loads on the first question.)"""
+    return {"available": ollama_client.is_available(), "model": settings.ollama_model, "local_only": True}
+
+
+@app.post("/api/chat")
+def chat(req: ChatRequest) -> Dict[str, Any]:
+    """Ask the local Ollama model about the portfolio. Reads state only; never trades."""
+    message = req.message.strip()
+    if not message:
+        raise HTTPException(status_code=422, detail="Message is empty.")
+    history = [{"role": t.role, "content": t.content} for t in req.history]
+    reply = ask_local_chatbot(message, chat_history=history, market="US")
+    return {"reply": reply, "ok": reply != FRIENDLY_ERROR_MSG}
