@@ -99,7 +99,7 @@ function TradeTable(props: {
           </thead>
           <tbody>
             {rows.map((t, i) => (
-              <tr key={`${t.date}-${t.ticker}-${i}`} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
+              <tr key={`${t.date}-${t.ticker}-${i}`} className="border-b border-line last:border-0 hover:bg-chip">
                 <td className="num py-3">{t.date}</td>
                 <td className="font-semibold">{t.ticker}</td>
                 <td>{t.action}</td>

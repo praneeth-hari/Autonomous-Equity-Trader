@@ -100,8 +100,8 @@ Autonomous-Equity-Trader/
 │   ├── trading/     # Paper broker
 │   ├── backtest/    # Day-by-day backtesting engine
 │   ├── pipeline/    # Daily pipeline orchestrator and scheduler
-│   ├── api/         # Read-only FastAPI layer for the dashboard (GET only)
-│   ├── services/    # UI-free data-access functions
+│   ├── api/         # FastAPI layer for the dashboard (reads only; one POST asks the local chatbot)
+│   ├── services/    # UI-free data access, plus the Yahoo Finance market service
 │   ├── llm/         # Local Ollama client (chatbot and sentiment)
 │   └── db/          # ORM models and repository layer
 ├── web/             # React dashboard (Vite + TypeScript + Tailwind)
@@ -157,6 +157,10 @@ python -m uvicorn src.api.app:app --host 127.0.0.1 --port 8000
 # 2. From the web folder: the React app, then open http://127.0.0.1:5173
 cd web; npm install; npm run dev
 ```
+
+Pages: **Dashboard** (a ticker hero, movers, and where the model stands), **Markets** (index ETFs, top movers, a volume-weighted heatmap), **Watchlist** (a watchlist and a browser-only practice portfolio), **Stock** (any ticker: candles or line, 20-bar average, volume, RSI, MACD, an SPY overlay, intervals from 5 minutes to 1 month, and headlines), and an **Account** menu with the paper account's overview, portfolio, trades, performance, signals, backtests and the chatbot. There is a light and a dark theme, and Ctrl+K opens ticker search.
+
+Prices for any ticker come from Yahoo Finance through the local API and may be delayed. Only ticker symbols leave your computer. Frontend tests: `cd web; npm test`.
 
 The Chatbot page needs the Ollama app running with a Llama 3.1 8B model (`OLLAMA_MODEL`); everything stays on your computer.
 

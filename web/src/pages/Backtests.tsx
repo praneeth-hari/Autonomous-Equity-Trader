@@ -23,7 +23,7 @@ export function Backtests() {
                 </thead>
                 <tbody>
                   {d.periods.map((p) => (
-                    <tr key={p.period} className="border-b border-slate-100 last:border-0">
+                    <tr key={p.period} className="border-b border-line last:border-0">
                       <td className="py-3 font-semibold">{p.period}</td>
                       <td className="num">{p.strategy.cagr_pct.toFixed(2)}%</td>
                       <td className="num">{p.spy_buy_hold.cagr_pct.toFixed(2)}%</td>
@@ -40,11 +40,11 @@ export function Backtests() {
                   <div className="mb-1 text-sm font-semibold">{p.period}</div>
                   {[
                     ['Strategy', p.strategy.cagr_pct, 'bg-brand'],
-                    ['SPY hold', p.spy_buy_hold.cagr_pct, 'bg-slate-400'],
+                    ['SPY hold', p.spy_buy_hold.cagr_pct, 'bg-faint'],
                   ].map(([label, v, cls]) => (
                     <div key={String(label)} className="mt-1 grid grid-cols-[90px_1fr_56px] items-center gap-3 text-sm">
                       <span className="text-muted">{label}</span>
-                      <div className="h-3 rounded-full bg-slate-100">
+                      <div className="h-3 rounded-full bg-chip">
                         <div className={`h-3 rounded-full ${cls}`} style={{ width: `${Math.max(2, (Number(v) / 14) * 100)}%` }} />
                       </div>
                       <span className="num text-right">{Number(v).toFixed(2)}%</span>

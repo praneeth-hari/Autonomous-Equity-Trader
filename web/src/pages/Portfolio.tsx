@@ -19,7 +19,7 @@ function Lane({ p, stop, target }: { p: Position; stop: number; target: number }
           style={{ left: `${Math.min(zero, at)}%`, width: `${Math.abs(at - zero)}%` }}
         />
         <div
-          className={`absolute top-1 h-4 w-4 -translate-x-1/2 rounded-full border-2 border-white ring-2 ${
+          className={`absolute top-1 h-4 w-4 -translate-x-1/2 rounded-full border-2 border-card ring-2 ${
             p.unrealized_pnl_pct >= 0 ? 'bg-brand ring-brand' : 'bg-loss ring-loss'
           }`}
           style={{ left: `${at}%` }}

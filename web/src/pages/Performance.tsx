@@ -5,11 +5,11 @@ import { Card, Empty, Label, Load, OptimisticNote, PageHeader, Pill } from '../c
 import { api } from '../lib/api'
 import { pct, tone, usd } from '../lib/format'
 
-const GAIN = '#12a066'
-const LOSS = '#d6403f'
-const AXIS = { fill: '#8a909c', fontSize: 11 }
-const TOOLTIP = { borderRadius: 12, border: '1px solid #e6e8ec', fontSize: 12 }
-const SECTOR_COLORS = ['#12a066', '#4f9cf9', '#f0b44c', '#8b7cf6', '#e8734a', '#2fb5b5', '#c26dbc']
+const GAIN = 'var(--color-brand)'
+const LOSS = 'var(--color-loss)'
+const AXIS = { fill: 'var(--color-faint)', fontSize: 11 }
+const TOOLTIP = { borderRadius: 12, border: '1px solid var(--color-line)', fontSize: 12, background: 'var(--color-card)', color: 'var(--color-ink)' }
+const SECTOR_COLORS = ['var(--color-brand)', '#4f9cf9', '#f0b44c', '#8b7cf6', '#e8734a', '#2fb5b5', '#c26dbc']
 
 function ChartCard({ title, note, children, empty }: { title: string; note?: string; children: ReactNode; empty?: string }) {
   return (
@@ -43,7 +43,7 @@ export function Performance() {
           return (
             <div className="grid gap-4">
               {!d.enough_history && (
-                <Card className="border-amber-200 bg-amber-50/60">
+                <Card className="border-amber/40 bg-amber/10">
                   <div className="text-sm font-medium text-amber">Not enough history for ratios yet</div>
                   <p className="mt-1 text-sm text-muted">
                     There are {d.sample_days} days of snapshots. Sharpe, Sortino and Calmar are noise below {d.min_days} days, so they are hidden until
@@ -63,11 +63,11 @@ export function Performance() {
                 <ChartCard title="Drawdown" note="How far below its previous high the account has been." empty={d.drawdown.length < 2 ? 'Needs at least two daily snapshots.' : undefined}>
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={d.drawdown} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
-                      <CartesianGrid stroke="#eef0f3" vertical={false} />
+                      <CartesianGrid stroke="var(--color-line)" vertical={false} />
                       <XAxis dataKey="date" tick={AXIS} tickLine={false} axisLine={false} minTickGap={40} />
                       <YAxis tick={AXIS} tickLine={false} axisLine={false} width={44} tickFormatter={(v: number) => `${v}%`} />
                       <Tooltip formatter={(v) => `${Number(v).toFixed(2)}%`} contentStyle={TOOLTIP} />
-                      <Area type="monotone" dataKey="drawdown_pct" name="Drawdown" stroke={LOSS} strokeWidth={2} fill="#fde8e8" />
+                      <Area type="monotone" dataKey="drawdown_pct" name="Drawdown" stroke={LOSS} strokeWidth={2} fill="var(--color-loss-soft)" />
                     </AreaChart>
                   </ResponsiveContainer>
                 </ChartCard>
@@ -75,7 +75,7 @@ export function Performance() {
                 <ChartCard title="Daily returns" note="How many days landed in each return range." empty={d.daily_returns.length === 0 ? 'Needs daily snapshots.' : undefined}>
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={d.daily_returns} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
-                      <CartesianGrid stroke="#eef0f3" vertical={false} />
+                      <CartesianGrid stroke="var(--color-line)" vertical={false} />
                       <XAxis dataKey="bin_center" tick={AXIS} tickLine={false} axisLine={false} tickFormatter={(v: number) => `${v}%`} />
                       <YAxis allowDecimals={false} tick={AXIS} tickLine={false} axisLine={false} width={30} />
                       <Tooltip labelFormatter={(_, p) => p?.[0]?.payload?.bin_label ?? ''} contentStyle={TOOLTIP} />
@@ -91,7 +91,7 @@ export function Performance() {
                 <ChartCard title="Win and loss by trade" note="Net profit or loss of each closed trade, after costs." empty={d.win_loss.length === 0 ? 'No trade has been closed yet.' : undefined}>
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={d.win_loss} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
-                      <CartesianGrid stroke="#eef0f3" vertical={false} />
+                      <CartesianGrid stroke="var(--color-line)" vertical={false} />
                       <XAxis dataKey="trade_label" tick={AXIS} tickLine={false} axisLine={false} />
                       <YAxis tick={AXIS} tickLine={false} axisLine={false} width={48} tickFormatter={(v: number) => `$${v}`} />
                       <Tooltip formatter={(v) => usd(Number(v))} contentStyle={TOOLTIP} />
@@ -109,7 +109,7 @@ export function Performance() {
                     <PieChart>
                       <Pie data={d.sectors} dataKey="value" nameKey="sector" innerRadius={50} outerRadius={80} paddingAngle={2}>
                         {d.sectors.map((s, i) => (
-                          <Cell key={s.sector} fill={s.sector.toLowerCase().includes('cash') ? '#cbd2dc' : SECTOR_COLORS[i % SECTOR_COLORS.length]} />
+                          <Cell key={s.sector} fill={s.sector.toLowerCase().includes('cash') ? 'var(--color-faint)' : SECTOR_COLORS[i % SECTOR_COLORS.length]} />
                         ))}
                       </Pie>
                       <Tooltip formatter={(v, _n, p) => `${usd(Number(v))} (${p?.payload?.pct?.toFixed?.(1)}%)`} contentStyle={TOOLTIP} />
@@ -143,7 +143,7 @@ export function Performance() {
                     </thead>
                     <tbody>
                       {d.closed_trades.map((t, i) => (
-                        <tr key={`${t.ticker}-${t.date_sold}-${i}`} className="border-b border-slate-100 last:border-0">
+                        <tr key={`${t.ticker}-${t.date_sold}-${i}`} className="border-b border-line last:border-0">
                           <td className="num py-3">{t.date_bought}</td>
                           <td className="num">{t.date_sold}</td>
                           <td className="font-semibold">{t.ticker}</td>

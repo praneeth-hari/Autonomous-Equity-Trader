@@ -3,7 +3,7 @@ import clsx from 'clsx'
 import type { ReactNode } from 'react'
 
 export function Card({ children, className }: { children: ReactNode; className?: string }) {
-  return <div className={clsx('rounded-2xl border border-line bg-white p-5', className)}>{children}</div>
+  return <div className={clsx('rounded-2xl border border-line bg-card p-5', className)}>{children}</div>
 }
 
 export function Label({ children }: { children: ReactNode }) {
@@ -13,9 +13,9 @@ export function Label({ children }: { children: ReactNode }) {
 type PillTone = 'ok' | 'warn' | 'neutral' | 'bad'
 const pillTones: Record<PillTone, string> = {
   ok: 'bg-brand-soft text-brand-ink',
-  warn: 'bg-amber-50 text-amber',
-  neutral: 'bg-slate-100 text-slate-600',
-  bad: 'bg-red-50 text-loss',
+  warn: 'bg-amber/10 text-amber',
+  neutral: 'bg-chip text-muted',
+  bad: 'bg-loss/10 text-loss',
 }
 
 export function Pill({ children, tone = 'neutral' }: { children: ReactNode; tone?: PillTone }) {
@@ -41,11 +41,11 @@ export function OptimisticNote({ children }: { children?: ReactNode }) {
 /** Renders loading, error (fail loud, with the reason) or the data. */
 export function Load<T>({ q, children }: { q: UseQueryResult<T>; children: (data: T) => ReactNode }) {
   if (q.isLoading) {
-    return <div className="h-40 animate-pulse rounded-2xl bg-slate-200/60" role="status" aria-label="Loading" />
+    return <div className="h-40 animate-pulse rounded-2xl bg-chip" role="status" aria-label="Loading" />
   }
   if (q.isError || !q.data) {
     return (
-      <Card className="border-red-200">
+      <Card className="border-loss/40">
         <div className="font-medium text-loss">Couldn't load this page</div>
         <p className="mt-1 text-sm text-muted">{(q.error as Error | null)?.message ?? 'No data returned.'}</p>
         <p className="mt-2 text-sm text-muted">

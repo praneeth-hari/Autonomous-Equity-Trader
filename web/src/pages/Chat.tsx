@@ -69,7 +69,7 @@ export function Chat() {
       />
 
       {!status.isLoading && !running && (
-        <Card className="mb-4 border-amber-200 bg-amber-50/60">
+        <Card className="mb-4 border-amber/40 bg-amber/10">
           <div className="text-sm font-medium text-amber">Ollama isn't answering</div>
           <p className="mt-1 text-sm text-muted">
             Start the Ollama app, then ask again. The first answer can take a minute while{' '}
@@ -91,7 +91,7 @@ export function Chat() {
                   <button
                     key={s}
                     onClick={() => send(s)}
-                    className="cursor-pointer rounded-full border border-line px-3 py-1.5 text-sm text-slate-600 transition-colors hover:bg-slate-50"
+                    className="cursor-pointer rounded-full border border-line px-3 py-1.5 text-sm text-muted transition-colors hover:bg-chip"
                   >
                     {s}
                   </button>
@@ -104,7 +104,7 @@ export function Chat() {
                 <div
                   className={clsx(
                     'max-w-[80%] whitespace-pre-wrap rounded-2xl px-4 py-2.5 text-sm leading-relaxed',
-                    m.role === 'user' ? 'bg-brand text-white' : m.failed ? 'border border-red-200 bg-red-50 text-loss' : 'bg-slate-100',
+                    m.role === 'user' ? 'bg-brand text-white' : m.failed ? 'border border-loss/40 bg-loss/10 text-loss' : 'bg-chip',
                   )}
                 >
                   {m.content}
@@ -114,7 +114,7 @@ export function Chat() {
           )}
           {ask.isPending && (
             <div className="flex justify-start" role="status" aria-label="The model is thinking">
-              <div className="rounded-2xl bg-slate-100 px-4 py-2.5 text-sm text-muted">Thinking…</div>
+              <div className="rounded-2xl bg-chip px-4 py-2.5 text-sm text-muted">Thinking…</div>
             </div>
           )}
           <div ref={endRef} />

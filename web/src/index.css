@@ -3,19 +3,47 @@
 @import '@fontsource/jetbrains-mono/400.css';
 @import '@fontsource/jetbrains-mono/500.css';
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Light theme (default). Every colour in the app comes from these tokens. */
 @theme {
   --font-sans: 'Inter Variable', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
-  --color-canvas: #f6f7f9;
-  --color-line: #e6e8ec;
-  --color-ink: #14171f;
-  --color-muted: #6b7280;
-  --color-faint: #8a909c;
-  --color-brand: #12a066;
-  --color-brand-soft: #e7f7ef;
+  --color-canvas: #f3f5f4;
+  --color-card: #fdfefd;
+  --color-chip: #eef1ef;
+  --color-line: #e3e8e5;
+  --color-ink: #0d1210;
+  --color-muted: #5d6762;
+  --color-faint: #8b948f;
+  --color-brand: #17a56a;
+  --color-brand-soft: #e3f5ec;
   --color-brand-ink: #0b6b43;
-  --color-loss: #d6403f;
+  --color-loss: #d8434f;
+  --color-loss-soft: #fde8e8;
   --color-amber: #b7791f;
+  --color-tile-up: #bfe3d0;
+  --color-tile-down: #e8aab0;
+}
+
+/* Dark theme: same names, different values, switched by the `dark` class on <html>. */
+html.dark {
+  --color-canvas: #0b0f0d;
+  --color-card: #121815;
+  --color-chip: #1a221e;
+  --color-line: #222b26;
+  --color-ink: #eef3f0;
+  --color-muted: #9aa6a0;
+  --color-faint: #6f7a74;
+  --color-brand: #34d08a;
+  --color-brand-soft: #123325;
+  --color-brand-ink: #7ee2b0;
+  --color-loss: #ef6672;
+  --color-loss-soft: #3a1c22;
+  --color-amber: #e0a43a;
+  --color-tile-up: #17382a;
+  --color-tile-down: #42202a;
+  color-scheme: dark;
 }
 
 html,
@@ -40,4 +68,22 @@ body {
 :focus-visible {
   outline: 2px solid var(--color-brand);
   outline-offset: 2px;
+}
+
+@keyframes tape {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.tape-track {
+  display: inline-block;
+  white-space: nowrap;
+  animation: tape 60s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tape-track {
+    animation: none;
+  }
 }

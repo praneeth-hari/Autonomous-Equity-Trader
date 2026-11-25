@@ -150,6 +150,57 @@ export interface Performance {
   label: string
 }
 
+export interface Quote {
+  symbol: string
+  name: string
+  price: number
+  prev_close: number
+  change: number
+  change_pct: number
+  volume: number
+  spark: number[]
+  in_universe: boolean
+  weight?: number
+  model?: { probability: number; date: string; zone: string } | null
+}
+
+export interface MarketOverview {
+  etfs: Quote[]
+  movers: Quote[]
+  universe: Quote[]
+}
+
+export interface Bar {
+  t: number
+  o: number
+  h: number
+  l: number
+  c: number
+  v: number
+}
+
+export interface History {
+  symbol: string
+  name: string
+  interval: string
+  bars: Bar[]
+  spy?: { t: number; c: number }[]
+}
+
+export interface StockDetail extends Quote {
+  open: number
+  high: number
+  low: number
+  week52_high: number
+  week52_low: number
+  as_of: number
+  model: { probability: number; date: string; zone: string } | null
+  headlines: { title: string; sentiment: 'positive' | 'neutral' | 'negative' }[]
+}
+
+export const INTERVALS = ['5min', '15min', '30min', '1h', '4h', '1day', '1week', '1month'] as const
+export type Interval = (typeof INTERVALS)[number]
+
 export interface ChatTurn {
   role: 'user' | 'assistant'
   content: string
@@ -181,6 +232,11 @@ async function post<T>(path: string, body: unknown): Promise<T> {
 
 export const api = {
   performance: () => get<Performance>('/api/performance'),
+  marketOverview: () => get<MarketOverview>('/api/market/overview'),
+  quotes: (symbols: string[]) => get<{ quotes: Quote[] }>(`/api/market/quotes?symbols=${encodeURIComponent(symbols.join(','))}`),
+  history: (symbol: string, interval: Interval, spy: boolean) =>
+    get<History>(`/api/market/history/${encodeURIComponent(symbol)}?interval=${interval}&bars=120&spy=${spy}`),
+  stock: (symbol: string) => get<StockDetail>(`/api/market/stock/${encodeURIComponent(symbol)}`),
   chatStatus: () => get<{ available: boolean; model: string; local_only: boolean }>('/api/chat/status'),
   chat: (message: string, history: ChatTurn[]) => post<ChatReply>('/api/chat', { message, history: history.slice(-6) }),
   status: () => get<Status>('/api/status'),

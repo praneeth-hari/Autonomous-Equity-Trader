@@ -36,7 +36,7 @@ export function Signals() {
                 </thead>
                 <tbody>
                   {d.predictions.map((p) => (
-                    <tr key={p.ticker} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
+                    <tr key={p.ticker} className="border-b border-line last:border-0 hover:bg-chip">
                       <td className="py-3 font-semibold">{p.ticker}</td>
                       <td className="text-muted">{p.sector}</td>
                       <td className="num">{p.probability.toFixed(2)}</td>

@@ -43,7 +43,7 @@ export function Overview() {
                 <Card>
                   <Label>Cash</Label>
                   <div className="num text-2xl font-medium">{s.cash_reserve_pct.toFixed(1)}%</div>
-                  <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100">
+                  <div className="mt-3 h-2 overflow-hidden rounded-full bg-chip">
                     <div className="h-full rounded-full bg-brand" style={{ width: `${Math.min(100, s.cash_reserve_pct)}%` }} />
                   </div>
                   <div className="mt-2 text-xs text-muted">{usd(s.cash)} uninvested</div>
@@ -71,7 +71,7 @@ export function Overview() {
                     </thead>
                     <tbody>
                       {s.positions.map((p) => (
-                        <tr key={p.ticker} className="border-b border-slate-100 last:border-0">
+                        <tr key={p.ticker} className="border-b border-line last:border-0">
                           <td className="py-3 font-semibold">{p.ticker}</td>
                           <td className="num">{usd(p.market_value)}</td>
                           <td className={`num ${tone(p.unrealized_pnl_pct)}`}>{pct(p.unrealized_pnl_pct)}</td>
