@@ -2,7 +2,7 @@
 src/pipeline/scheduler.py — Local Daily Pipeline Automation Scheduler (Phase 13).
 
 ================================================================================
-CRITICAL ARCHITECTURAL SAFETY GUARANTEE (CLAUDE.md Rule 10 & §1.9):
+CRITICAL ARCHITECTURAL SAFETY GUARANTEE (ENGINEERING_RULES.md Rule 10 & §1.9):
 --------------------------------------------------------------------------------
 THIS SCHEDULER EXCLUSIVELY CALLS run_daily_pipeline(), WHICH ONLY TOUCHES THE
 PAPER BROKER (PaperBroker) AND SQLITE DATABASE (src/db/repository.py).

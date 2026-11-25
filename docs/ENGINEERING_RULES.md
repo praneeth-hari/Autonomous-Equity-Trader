@@ -1,4 +1,4 @@
-# CLAUDE.md — Always-On Rules for This Project
+# ENGINEERING_RULES.md — Always-On Rules for This Project
 
 Read this every session. The full spec is in `docs/PROJECT_PLAN.md`. This file is the short version of the rules that must **never** be broken. If anything here conflicts with a request, follow these rules and say so.
 

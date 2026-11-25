@@ -52,7 +52,7 @@ MODEL_TYPE_PRIMARY: str = "primary"      # HistGradientBoostingClassifier
 MODEL_TYPE_BASELINE: str = "baseline"    # LogisticRegression + StandardScaler
 MODEL_TYPE_XGBOOST: str = "xgboost"      # XGBoost Classifier
 MODEL_TYPE_ENSEMBLE: str = "ensemble"    # VotingClassifier (soft voting over Primary, Baseline, XGBoost)
-# Locked strategy value (CLAUDE.md): the Baseline is the model that is promoted and evaluated.
+# Locked strategy value (ENGINEERING_RULES.md): the Baseline is the model that is promoted and evaluated.
 LOCKED_MODEL_TYPE: str = MODEL_TYPE_BASELINE
 VALID_MODEL_TYPES = {
     MODEL_TYPE_PRIMARY,

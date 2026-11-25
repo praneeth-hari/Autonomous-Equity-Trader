@@ -12,13 +12,13 @@ Turn model probabilities P(rise > +1% over 5d) into an ordered opportunity list:
        - EXIT_CANDIDATE: P < settings.signal_exit (0.45)
   4. Output the complete ranked opportunity list and un-capped top_buy_candidates.
 
-ARCHITECTURE & CLAUDE.md RULE 2 (NO PRE-CAPPING)
+ARCHITECTURE & ENGINEERING_RULES.md RULE 2 (NO PRE-CAPPING)
 -------------------------------------------------
 CRITICAL: top_buy_candidates in RankingResult is NOT pre-capped at 3.
 The Ranking Engine's responsibility is solely to rank and qualify ALL candidates
 meeting the conviction bar (P >= 0.60).
 
-Per CLAUDE.md Rule 2 and Section 1.4:
+Per ENGINEERING_RULES.md Rule 2 and Section 1.4:
   "The Risk Engine always sits between ML and any trade decision, and can veto."
 Phase 8's Risk Engine is the ONLY layer authorized to enforce the 3-position cap,
 cash reserve constraints, portfolio rebalancing, and regime-filter vetoes.

@@ -11,7 +11,7 @@ Table design notes:
   and keeps the schema stable as features are added/removed in Phase 3.
 - portfolio captures a full snapshot of cash + positions per run date.
 - orders records every decision; trades records every simulated fill.
-- event_log provides the structured audit trail required by CLAUDE.md rule 8.
+- event_log provides the structured audit trail required by ENGINEERING_RULES.md rule 8.
 
 Upgrade path to PostgreSQL:
   Change settings.db_url — no schema changes needed. SQLAlchemy handles the
@@ -290,7 +290,7 @@ class BenchmarkSnapshotRow(Base):
 class EventLog(Base):
     """
     Structured audit log for every prediction, decision, skip, and error.
-    Satisfies CLAUDE.md rule 8: 'Fail loud, log everything.'
+    Satisfies ENGINEERING_RULES.md rule 8: 'Fail loud, log everything.'
     'component' identifies which engine emitted the event (e.g. 'validation',
     'risk_engine', 'paper_broker').
     'details' is a JSON blob for structured metadata (ticker, values, rule names).

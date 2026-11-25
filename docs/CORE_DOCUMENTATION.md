@@ -262,7 +262,7 @@ tests/test_validation.py::TestRealData::test_real_aapl_data_passes_validation PA
 
 **Gap threshold phrasing unified:** `CRITICAL_GAP_DAYS = 6`, condition is `run_len >= CRITICAL_GAP_DAYS`. All docstrings now say `>= 6` exactly — the previous ">5" phrasing was equivalent but inconsistent.
 
-**Holiday/weekend silence fixed (CLAUDE.md rule 8):** Gap check was previously fully silent when the data was clean or absences were holidays. Two DEBUG-level traces are now emitted on every run: (1) a summary of expected-vs-present day counts, (2) a "PASSED — no unexplained missing trading days" confirmation on the clean path. Docstrings updated to say: *"A DEBUG-level trace IS always emitted for full auditability."*
+**Holiday/weekend silence fixed (ENGINEERING_RULES.md rule 8):** Gap check was previously fully silent when the data was clean or absences were holidays. Two DEBUG-level traces are now emitted on every run: (1) a summary of expected-vs-present day counts, (2) a "PASSED — no unexplained missing trading days" confirmation on the clean path. Docstrings updated to say: *"A DEBUG-level trace IS always emitted for full auditability."*
 
 **Network-transient skip guards added:** Live yfinance tests now call `pytest.skip(reason)` instead of failing hard when yfinance returns empty due to rate-limiting. All 3 live-network tests show as `SKIPPED (reason)` in pytest `-v` output — clearly distinct from passes at a glance.
 
@@ -488,7 +488,7 @@ TestNaNHandling::test_feature_columns_registry_completeness PASSED         [100%
 **Future-Close Mutation Independence:**
 - Mutating future closes alters forward returns and labels, but leaves same-day and prior features 100% identical (`test_future_close_mutation_leaves_past_features_identical`).
 
-**Strict Config Parameterization (CLAUDE.md Rule 1):**
+**Strict Config Parameterization (ENGINEERING_RULES.md Rule 1):**
 - Formula dynamically reads `settings.prediction_horizon` and `settings.win_threshold` with optional parameter overrides. Zero hardcoded literals in the calculation.
 
 **Numerical Precision at Boundary:**
@@ -817,7 +817,7 @@ Model: BASELINE (LogisticRegression + StandardScaler)
   - `BUY_CANDIDATE`: $P \ge \text{settings.buy\_bar}$ (0.60).
   - `NEUTRAL_HOLD`: $\text{settings.signal\_exit} (0.45) \le P < \text{settings.buy\_bar}$ (0.60).
   - `EXIT_CANDIDATE`: $P < \text{settings.signal\_exit}$ (0.45).
-- **Architectural Separation & Zero Pre-Capping (CLAUDE.md Rule 2)**:
+- **Architectural Separation & Zero Pre-Capping (ENGINEERING_RULES.md Rule 2)**:
   - `top_buy_candidates` in `RankingResult` is **explicitly NOT pre-capped at 3**.
   - All qualifying candidates ($P \ge 0.60$) are forwarded downstream. Phase 8's Risk Engine is the sole authority enforcing the 3-position cap, cash reserve, and regime veto.
 - **Market Regime Check (§1.8)**:
@@ -831,7 +831,7 @@ Model: BASELINE (LogisticRegression + StandardScaler)
 - [`tests/test_ranking.py`](file:///d:/ai-stock-trader/tests/test_ranking.py)
 
 ### 3. Key Decisions Made
-- **No Pre-Capping at 3**: Pre-capping in Ranking would violate CLAUDE.md Rule 2 by preempting Risk Engine decisions. If a top-ranked stock is already owned in the portfolio, Risk needs access to the #4 or #5 candidate.
+- **No Pre-Capping at 3**: Pre-capping in Ranking would violate ENGINEERING_RULES.md Rule 2 by preempting Risk Engine decisions. If a top-ranked stock is already owned in the portfolio, Risk needs access to the #4 or #5 candidate.
 - **Dynamic Config Thresholds**: Sizing and entry/exit thresholds are read dynamically from `config.settings.settings` (`buy_bar = 0.60`, `signal_exit = 0.45`), avoiding hardcoded literals.
 
 ### 4. Test Commands & Real Verification Output
@@ -890,7 +890,7 @@ Action: HOLD CASH (Selective capital preservation).
 
 ### 1. What Was Built
 - **Risk Management Engine (`src/risk/risk_engine.py`)**:
-  - Unilateral veto authority over all trading decisions (CLAUDE.md Rule 2 & Section 1.4).
+  - Unilateral veto authority over all trading decisions (ENGINEERING_RULES.md Rule 2 & Section 1.4).
   - Evaluates current portfolio positions and incoming opportunities in strict sequence:
     1. **Existing Holdings Exits First:** Stop-Loss (-8.0%), Take-Profit (+15.0%), Signal-Exit (P < 0.45). Liquidations free portfolio slots and return cash net of 0.2% costs.
     2. **Bad/Missing Data Immunity (§1.7):** If a currently-held position has invalid or missing data today, it is held untouched with `SKIPPED_INVALID_DATA_HELD_UNCHANGED` and never prematurely sold.
@@ -1349,7 +1349,7 @@ Phase 13 establishes the local unattended daily automation loop ([`src/pipeline/
 It satisfies the §1.9 operational mandate to run **100% free on your local laptop** without cloud/AWS hosting or paid server dependencies.
 
 > [!IMPORTANT]
-> **Architectural Safety Guarantee (CLAUDE.md Rule 10 & §1.9)**:
+> **Architectural Safety Guarantee (ENGINEERING_RULES.md Rule 10 & §1.9)**:
 > This scheduler exclusively calls `run_daily_pipeline()`, which only touches the paper broker (`PaperBroker`) and SQLite database (`src/db/repository.py`).
 > It contains **NO real-money or live-broker-API code path anywhere**. V1 is strictly paper-trading only.
 

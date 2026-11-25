@@ -8,7 +8,7 @@
 
 This is the single master roadmap. Follow it **phase by phase, top to bottom.** Each phase states what to build, why, what "done" looks like, and how to test it before moving on. **Do not skip phases** — later ones assume earlier ones are built and tested.
 
-This plan is written to be handed to **Claude Code** (or built by hand). The companion file `CLAUDE.md` holds the short, always-on rules that keep the build aligned with the locked decisions below.
+This plan is written to be handed to an AI coding assistant (or built by hand). The companion file `ENGINEERING_RULES.md` holds the short, always-on rules that keep the build aligned with the locked decisions below.
 
 **The guiding philosophy of this entire project:** *When in doubt, protect the capital.* Cut losses fast, let winners run, sit in cash when uncertain, trust nothing without a known-answer test, assume reality is worse than the backtest, and never let real money near an unproven system. Every decision below serves that philosophy.
 
@@ -253,7 +253,7 @@ ai-stock-trader/
 ├── .env                       # local secrets/settings (git-ignored)
 ├── .gitignore
 ├── requirements.txt
-└── CLAUDE.md                  # always-on rules for Claude Code
+└── ENGINEERING_RULES.md                  # always-on engineering rules
 ```
 
 ---
@@ -478,4 +478,4 @@ The original estimate is ~30 days of near-daily effort for one person; treat tha
 
 ---
 
-*End of V1 Master Plan. Companion file: `CLAUDE.md` (always-on rules for Claude Code).*
+*End of V1 Master Plan. Companion file: `ENGINEERING_RULES.md` (always-on engineering rules).*

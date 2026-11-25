@@ -597,7 +597,7 @@ class Settings(BaseSettings):
     trailing_stop_enabled: bool = Field(
         default=False,
         description=(
-            "Locked OFF in V1 (CLAUDE.md, PROJECT_PLAN.md): exits use the fixed stop_loss from entry. "
+            "Locked OFF in V1 (ENGINEERING_RULES.md, PROJECT_PLAN.md): exits use the fixed stop_loss from entry. "
             "When True, the risk engine also exits at trailing_stop_pct below the highest price since entry."
         ),
     )

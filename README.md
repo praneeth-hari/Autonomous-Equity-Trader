@@ -172,7 +172,7 @@ Historical tuning has stopped. No configuration showed a durable edge over SPY. 
 ## Documentation
 
 - [docs/PROJECT_PLAN.md](docs/PROJECT_PLAN.md): master plan and locked decisions
-- [CLAUDE.md](CLAUDE.md): always-on engineering rules
+- [ENGINEERING_RULES.md](docs/ENGINEERING_RULES.md): always-on engineering rules
 - [docs/SIMPLE_GUIDE.md](docs/SIMPLE_GUIDE.md): plain-English walkthrough of each phase
 - [docs/CORE_DOCUMENTATION.md](docs/CORE_DOCUMENTATION.md): technical reference
 - [V1_FREEZE_REPORT.md](V1_FREEZE_REPORT.md): frozen V1 configuration and benchmark results

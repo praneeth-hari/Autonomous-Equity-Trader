@@ -4,7 +4,7 @@ src/risk/risk_engine.py — Phase 8 Risk Management & Portfolio Sizing Engine.
 PURPOSE
 -------
 Enforce the project's capital preservation rules (§1.1, §1.4, §1.8) with unilateral
-veto power between ML ranking and trade execution (CLAUDE.md Rule 2).
+veto power between ML ranking and trade execution (ENGINEERING_RULES.md Rule 2).
 
 ARCHITECTURAL PRINCIPLES & EXECUTION ORDER
 -------------------------------------------

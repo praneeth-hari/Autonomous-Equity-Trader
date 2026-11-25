@@ -5,7 +5,7 @@ TEST SUITE OBJECTIVES:
   1. Ordering: highest probability ranks at the top.
   2. Tie-Breaking: relative strength (rel_strength_21) and price_to_ma50 resolve ties.
   3. Conviction Tiers: verify buy_bar (0.60) and signal_exit (0.45) boundary conditions.
-  4. Sizing Separation (CLAUDE.md Rule 2): verify top_buy_candidates is NOT pre-capped at 3.
+  4. Sizing Separation (ENGINEERING_RULES.md Rule 2): verify top_buy_candidates is NOT pre-capped at 3.
   5. Cash-First / Zero-Candidate: when no stock achieves P >= 0.60, buy_candidates is empty.
   6. Real Active-Model Integration: end-to-end inference and ranking using promoted active_model.joblib.
   7. Market Regime Check: SPY >= 200d MA sets regime_risk_on = True; SPY < 200d MA sets False.
@@ -174,7 +174,7 @@ class TestConvictionTiers:
 class TestRiskEngineSeparationAndNoPreCapping:
     def test_4_uncapped_buy_candidates_no_precapping_at_3(self):
         """
-        CRITICAL ARCHITECTURAL TEST (CLAUDE.md Rule 2):
+        CRITICAL ARCHITECTURAL TEST (ENGINEERING_RULES.md Rule 2):
         top_buy_candidates in RankingResult must NOT be pre-capped at 3.
         It must contain ALL qualifying candidates (P >= 0.60) so Risk Engine
         retains full visibility for vetoes and portfolio allocation.

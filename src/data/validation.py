@@ -23,7 +23,7 @@ WARNING → flag, do NOT reject
     - Gaps that align with known NYSE holidays or weekends are expected and
       correct. They are NOT flagged as warnings or errors. A DEBUG-level trace
       IS always emitted so every gap-check run leaves a full audit trail
-      (CLAUDE.md rule 8: log everything).
+      (ENGINEERING_RULES.md rule 8: log everything).
     - CRITICAL escalation: >= 6 consecutive unexplained missing trading days
       (run_len >= CRITICAL_GAP_DAYS) triggers a CRITICAL log — this magnitude
       of absence suggests the data
@@ -336,7 +336,7 @@ def check_trading_gaps(
 
     Weekend and NYSE holiday absences are NOT flagged as warnings or errors
     — they are expected and correct. However, a DEBUG-level trace IS always
-    emitted for full auditability (CLAUDE.md rule 8: log everything). A run
+    emitted for full auditability (ENGINEERING_RULES.md rule 8: log everything). A run
     with zero unexplained gaps also emits a DEBUG trace confirming the check
     passed cleanly.
 
@@ -355,7 +355,7 @@ def check_trading_gaps(
 
     # DEBUG trace: total calendar days computed vs. data days present.
     # Always emitted so every gap-check run leaves a full audit trail
-    # even when no problems are found (CLAUDE.md rule 8: log everything).
+    # even when no problems are found (ENGINEERING_RULES.md rule 8: log everything).
     logger.debug(
         "%s: gap check — NYSE expected %d trading days (%s to %s), "
         "data contains %d distinct dates. "

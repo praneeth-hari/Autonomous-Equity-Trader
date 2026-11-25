@@ -62,7 +62,7 @@ Final benchmark for the configured strategy (2-year walk-forward, net of 0.2% pe
 
 Trailing stop is OFF.
 
-Note: CLAUDE.md lists the signal exit as a flat 0.45. The code uses the volatility-adaptive values above; that was already the case before the freeze and is recorded here, not changed.
+Note: ENGINEERING_RULES.md lists the signal exit as a flat 0.45. The code uses the volatility-adaptive values above; that was already the case before the freeze and is recorded here, not changed.
 
 ### Other risk controls
 
