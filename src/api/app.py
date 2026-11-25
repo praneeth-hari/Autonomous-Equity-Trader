@@ -1,10 +1,9 @@
 """
 src/api/app.py — Read-only FastAPI layer for the new frontend.
 
-Rules (see docs/ENGINEERING_RULES.md):
+Project rules:
   * Read-only: every endpoint reads. The single POST, /api/chat, only asks the local LLM a question
     (it changes no state). No trading, no broker, no model promotion.
-)
   * Local only: CORS allows the Vite dev server on localhost, nothing else.
   * Net, never gross: every backtest payload carries the SPY comparison and the
     "optimistic" label.
@@ -31,6 +30,7 @@ from config.settings import settings
 from src.chatbot.local_chat import FRIENDLY_ERROR_MSG, ask_local_chatbot
 from src.llm import ollama_client
 from src.services import data_loader as dl
+from src.services import market_service as ms
 
 logger = logging.getLogger(__name__)
 
@@ -265,3 +265,43 @@ def chat(req: ChatRequest) -> Dict[str, Any]:
     history = [{"role": t.role, "content": t.content} for t in req.history]
     reply = ask_local_chatbot(message, chat_history=history, market="US")
     return {"reply": reply, "ok": reply != FRIENDLY_ERROR_MSG}
+
+
+# ── Market data (Yahoo Finance via the local service; read-only display) ──────
+
+def _market(name: str, fn: Callable[[], Any]) -> Any:
+    try:
+        return fn()
+    except ms.InvalidSymbol as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except ms.MarketDataError as exc:
+        logger.error("Market reader %s failed: %s", name, exc)
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+
+@app.get("/api/market/overview")
+def market_overview() -> Dict[str, Any]:
+    return _market("market overview", lambda: _clean(ms.get_overview()))
+
+
+@app.get("/api/market/quotes")
+def market_quotes(symbols: str = Query(..., min_length=1, max_length=400)) -> Dict[str, Any]:
+    wanted = [s for s in symbols.split(",") if s.strip()]
+    if not 1 <= len(wanted) <= 40:
+        raise HTTPException(status_code=422, detail="Ask for between 1 and 40 symbols.")
+    return _market("market quotes", lambda: {"quotes": _clean(ms.get_quotes(wanted))})
+
+
+@app.get("/api/market/history/{symbol}")
+def market_history(
+    symbol: str,
+    interval: str = Query("1day"),
+    bars: int = Query(120, ge=20, le=500),
+    spy: bool = Query(False),
+) -> Dict[str, Any]:
+    return _market("market history", lambda: _clean(ms.get_history(symbol, interval, bars, with_spy=spy)))
+
+
+@app.get("/api/market/stock/{symbol}")
+def market_stock(symbol: str) -> Dict[str, Any]:
+    return _market("market stock", lambda: _clean(ms.get_stock(symbol)))
