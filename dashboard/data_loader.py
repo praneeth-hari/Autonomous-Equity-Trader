@@ -1370,10 +1370,10 @@ def run_tax_report_trigger(year: int = 2026, country: str = "India") -> Dict[str
 
 def ask_chatbot_trigger(user_message: str, chat_history: Optional[List[Dict[str, str]]] = None, market: str = "US") -> str:
     """
-    Triggers the Gemini Chatbot response for a user prompt in active market context.
+    Triggers the local-LLM (Ollama) chatbot response for a user prompt in active market context.
     """
-    from src.chatbot.gemini_chat import ask_gemini_chatbot
-    return ask_gemini_chatbot(user_message=user_message, chat_history=chat_history, market=market)
+    from src.chatbot.local_chat import ask_local_chatbot
+    return ask_local_chatbot(user_message=user_message, chat_history=chat_history, market=market)
 
 
 # ── Performance Metrics & Walk Forward History Data Loaders ───────────────────

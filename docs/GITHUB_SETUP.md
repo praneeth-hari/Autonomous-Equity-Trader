@@ -7,7 +7,6 @@ Add these secrets:
 
 - `TELEGRAM_BOT_TOKEN` = your bot token
 - `TELEGRAM_CHAT_ID` = your chat id
-- `GEMINI_API_KEY` = your gemini key
 - `ALPHA_VANTAGE_API_KEY` = your key
 - `FRED_API_KEY` = your key (optional)
 - `DATABASE_URL` = your supabase url
@@ -37,7 +36,6 @@ Add these secrets:
 | `DATABASE_URL` | Supabase PostgreSQL URI from Step 1 | **Yes** (persists trade data across runs) |
 | `TELEGRAM_BOT_TOKEN` | Your Telegram Bot token from @BotFather | Recommended |
 | `TELEGRAM_CHAT_ID` | Your personal or group Telegram Chat ID | Recommended |
-| `GEMINI_API_KEY` | Google Gemini API key for AI summaries/analyst | Optional |
 | `ALPHA_VANTAGE_API_KEY` | Alpha Vantage API key for market data fallback | Optional |
 | `FRED_API_KEY` | Federal Reserve Economic Data API key | Optional |
 

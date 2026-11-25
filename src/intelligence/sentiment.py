@@ -137,14 +137,24 @@ def get_vader_sentiment(text: str) -> dict:
     return analyzer.polarity_scores(text)
 
 
+OLLAMA_RETRY_COOLDOWN_SECONDS = 300
+_llm_unavailable_until = 0.0  # time.monotonic() value until which the local LLM is skipped
+
+
 def get_fingpt_sentiment(text: str) -> dict:
     """
     FinGPT-inspired sentiment analysis using a finance-specific prompt.
-    Uses Gemini API (already configured) with a FinGPT-style finance prompt.
-    Falls back to VADER if Gemini is unavailable.
+    Uses the local Ollama model (Llama 3.1 8B); nothing leaves this machine.
+    Falls back to VADER if the local model is unavailable. After one failure the LLM is skipped
+    for OLLAMA_RETRY_COOLDOWN_SECONDS so a dead model does not slow every headline.
     Returns dict with keys: score (float -1 to 1), label (str), source (str)
     """
     import re
+    import time
+
+    from src.llm import ollama_client
+
+    global _llm_unavailable_until
 
     FINGPT_PROMPT = """You are a financial sentiment analyzer trained like FinGPT.
 Analyze the following financial text and respond with ONLY one word:
@@ -155,24 +165,24 @@ Text: {text}
 Response:"""
 
     try:
-        from google import genai
-        from config.settings import settings
-        if not settings.gemini_api_key:
-            raise ValueError("No Gemini API key")
-        client = genai.Client(api_key=settings.gemini_api_key)
-        response = client.models.generate_content(
-            model=getattr(settings, "gemini_model", "gemini-2.5-flash") or "gemini-2.5-flash",
-            contents=FINGPT_PROMPT.format(text=text[:500]),
+        if time.monotonic() < _llm_unavailable_until:
+            raise ollama_client.OllamaError("local model in cooldown after a failure")
+        reply = ollama_client.chat(
+            [{"role": "user", "content": FINGPT_PROMPT.format(text=text[:500])}],
+            timeout=settings.ollama_sentiment_timeout_seconds,
+            temperature=0.0,
         )
-        label = response.text.strip().upper()
-        label = re.sub(r"[^A-Z]", "", label)
-        if label == "BULLISH":
+        words = set(re.findall(r"BULLISH|BEARISH|NEUTRAL", reply.upper()))
+        if words == {"BULLISH"}:
             return {"score": 0.6, "label": "BULLISH", "source": "fingpt"}
-        elif label == "BEARISH":
+        elif words == {"BEARISH"}:
             return {"score": -0.6, "label": "BEARISH", "source": "fingpt"}
-        else:
+        else:  # NEUTRAL, mixed, or unrecognised: no signal
             return {"score": 0.0, "label": "NEUTRAL", "source": "fingpt"}
-    except Exception:
+    except Exception as exc:  # noqa: BLE001 - degrade to VADER, but say so in the log
+        if not str(exc).startswith("local model in cooldown"):
+            _llm_unavailable_until = time.monotonic() + OLLAMA_RETRY_COOLDOWN_SECONDS
+            logger.warning("SENTIMENT_LLM_UNAVAILABLE: using VADER fallback for %ds (%s)", OLLAMA_RETRY_COOLDOWN_SECONDS, exc)
         vader = get_vader_sentiment(text)
         compound = vader.get("compound", 0.0)
         return {

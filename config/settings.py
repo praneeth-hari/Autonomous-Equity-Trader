@@ -294,7 +294,7 @@ class Settings(BaseSettings):
         description="Wait time in seconds between fetch retries.",
     )
     data_fetch_timeout_sec: float = Field(
-        default=30.0,
+        default=90.0,
         gt=0,
         description="Timeout in seconds for market data network requests (e.g. yfinance).",
     )
@@ -727,13 +727,25 @@ class Settings(BaseSettings):
             raise ValueError("buy_bar must be > signal_exit (0.45) to create a dead zone.")
         return v
 
-    gemini_api_key: str = Field(
-        default="",
-        description="Google Gemini API key for chatbot.",
+    ollama_base_url: str = Field(
+        default="http://127.0.0.1:11434",
+        description="Local Ollama server for the chatbot and the news-sentiment scorer. Must be a local address.",
     )
-    gemini_model: str = Field(
-        default="gemini-2.5-flash",
-        description="Gemini model name for chatbot.",
+    ollama_model: str = Field(
+        default="llama31-rag:latest",
+        description="Local Ollama model (a Llama 3.1 8B build). Run `ollama list` for names.",
+    )
+    ollama_num_ctx: int = Field(
+        default=4096,
+        description="Context window sent to Ollama. Smaller uses less memory; prompts here are ~1-2k tokens.",
+    )
+    ollama_timeout_seconds: float = Field(
+        default=120.0,
+        description="Seconds the chatbot waits for the local model (the first call loads it into memory).",
+    )
+    ollama_sentiment_timeout_seconds: float = Field(
+        default=90.0,
+        description="Seconds the sentiment scorer waits per headline before falling back to VADER.",
     )
     suppress_duplicate_alerts: bool = Field(
         default=True,

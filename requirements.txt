@@ -21,7 +21,6 @@ kagglehub>=0.3.0
 
 # ── Sentiment & AI Intelligence ───────────────────────────────────────────────
 vaderSentiment>=3.3.2
-google-genai>=0.8.0
 
 # ── Alerts & Notifications ───────────────────────────────────────────────────
 python-telegram-bot>=20.0

@@ -7,7 +7,7 @@ from datetime import date
 import pytest
 
 from config.settings import settings
-from src.chatbot.gemini_chat import build_live_context_strings
+from src.chatbot.local_chat import build_live_context_strings
 from src.db import repository
 from src.pipeline.daily_pipeline import _resolve_market
 from src.reports.weekly_summary import generate_weekly_summary_data

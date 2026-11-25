@@ -1,15 +1,16 @@
 """
-src/chatbot/gemini_chat.py — Section 10 Option C: AI Chatbot Engine.
+src/chatbot/local_chat.py — Section 10 Option C: AI Chatbot Engine (local LLM).
 
-Provides live system context gathering and integrates with the Google Gemini API
-to answer user questions about portfolio performance, risk rules, and trading decisions.
+Gathers live system context and sends it to a model running locally in Ollama
+(Llama 3.1 8B) to answer questions about portfolio performance, risk rules and
+trading decisions. Nothing leaves this machine: the Ollama URL must be a local
+address, so portfolio data is never sent to an outside service.
 """
 
 from __future__ import annotations
 
 import logging
-import os
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 from config.settings import settings
 from dashboard.data_loader import (
@@ -18,6 +19,8 @@ from dashboard.data_loader import (
     get_recent_trades_df,
 )
 from src.db import repository
+from src.llm import ollama_client
+from src.llm.ollama_client import OllamaError
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +50,11 @@ Model Rankings Today:
 {model_rankings}
 """
 
-FRIENDLY_ERROR_MSG = "Sorry I am having trouble connecting. Please try again in a moment."
+FRIENDLY_ERROR_MSG = (
+    "Sorry, I can't reach the local AI model. Make sure Ollama is running and the model "
+    "is downloaded, then try again."
+)
+
 
 
 def build_live_context_strings(market: str = "US") -> Dict[str, str]:
@@ -146,68 +153,26 @@ def generate_system_prompt(market: str = "US") -> str:
     )
 
 
-def ask_gemini_chatbot(
+def ask_local_chatbot(
     user_message: str,
     chat_history: Optional[List[Dict[str, str]]] = None,
     market: str = "US",
-    api_key: Optional[str] = None,
+    base_url: Optional[str] = None,
     model_name: Optional[str] = None,
 ) -> str:
     """
-    Sends the user message along with injected live context to the Google Gemini API.
-    Returns the chatbot response text or a friendly error message on failure.
+    Sends the user message with live context to the local Ollama server.
+    Returns the reply text, or a friendly error message on any failure (details go to the log).
     """
-    key_to_use = (
-        api_key
-        or getattr(settings, "gemini_api_key", "")
-        or os.getenv("GEMINI_API_KEY", "")
-    )
-    if key_to_use:
-        key_to_use = str(key_to_use).strip()
-
-    if not key_to_use:
-        logger.warning("GEMINI_API_KEY is not set.")
-        return FRIENDLY_ERROR_MSG
-
-    effective_model = (
-        model_name
-        or getattr(settings, "gemini_model", "gemini-2.5-flash")
-        or os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
-    )
-    if effective_model:
-        effective_model = str(effective_model).strip()
+    messages: List[Dict[str, str]] = [{"role": "system", "content": generate_system_prompt(market=market)}]
+    for msg in (chat_history or [])[-6:]:  # keep the last 3 turns
+        role = "user" if msg.get("role") == "user" else "assistant"
+        messages.append({"role": role, "content": str(msg.get("content", ""))})
+    messages.append({"role": "user", "content": user_message})
 
     try:
-        from google import genai
-
-        client = genai.Client(api_key=key_to_use)
-        system_instruction = generate_system_prompt(market=market)
-
-        # Format conversation history if provided
-        history_lines = []
-        if chat_history:
-            for msg in chat_history[-6:]:  # Keep last 3 turns for turn memory
-                role = "user" if msg.get("role") == "user" else "model"
-                history_lines.append(f"{role.upper()}: {msg.get('content', '')}")
-
-        history_text = "\n".join(history_lines) if history_lines else "None"
-        full_prompt = (
-            f"{system_instruction}\n\n"
-            f"CONVERSATION HISTORY:\n{history_text}\n\n"
-            f"USER: {user_message}"
-        )
-
-        logger.debug("Sending prompt to Gemini API model %s...", effective_model)
-        response = client.models.generate_content(
-            model=effective_model,
-            contents=full_prompt,
-        )
-
-        if response and hasattr(response, "text") and response.text:
-            return response.text.strip()
-        else:
-            return FRIENDLY_ERROR_MSG
-
-    except Exception as exc:
-        logger.error("Gemini API call error: %s", exc, exc_info=True)
+        return ollama_client.chat(messages, base_url=base_url, model=model_name)
+    except OllamaError as exc:
+        logger.error("Chatbot could not get a local-model reply: %s", exc)
         return FRIENDLY_ERROR_MSG
+

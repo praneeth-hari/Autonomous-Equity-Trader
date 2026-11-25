@@ -132,3 +132,8 @@ Note: docs/ENGINEERING_RULES.md lists the signal exit as a flat 0.45. The code u
   - `architecture_visualization.html` (unrelated).
   - `reports/tax_2026.csv` and `reports/tax_2026.pdf` (generated output).
 - **Backtest-only tooling** (in `src/backtest/backtest.py`; not used by live trading): point-in-time correlation price histories, `macro_cache_path` for deterministic macro data, and `apply_sector_rotation`. Defaults are unchanged. Experiment scripts and results stay in the session scratchpad.
+
+## 8. Changes after the freeze
+
+- **2026-11-25: low-confidence headline scorer moved from Gemini to a local Ollama model** (Llama 3.1 8B). Same prompt and same score mapping (BULLISH +0.6, BEARISH -0.6, otherwise 0). It still applies only when VADER's |compound| < 0.2, and it falls back to VADER when the local model is unavailable. This was requested explicitly. It can change individual headline scores, so it can nudge the sentiment modifier: treat forward results from this date as a slightly different configuration. No other frozen value changed, and the model file hash is unchanged.
+- The GitHub Actions run has no Ollama, so it will use VADER only.

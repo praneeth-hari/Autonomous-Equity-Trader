@@ -79,7 +79,7 @@ All defaults live in `config/settings.py` and can be overridden through `.env`.
 | Language | Python 3.11 |
 | Data | pandas, numpy, yfinance, Alpha Vantage, pandas-market-calendars |
 | ML | scikit-learn (HistGradientBoosting, Logistic Regression), XGBoost, LightGBM, SHAP, Optuna |
-| NLP / alerts | VaderSentiment, python-telegram-bot, Google GenAI |
+| NLP / alerts | VaderSentiment, python-telegram-bot, Ollama (local LLM chatbot and sentiment) |
 | Storage | SQLAlchemy, SQLite / PostgreSQL |
 | Dashboard | Streamlit, Plotly |
 | Scheduling | Windows Task Scheduler (PowerShell), APScheduler |

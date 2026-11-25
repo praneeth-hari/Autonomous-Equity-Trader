@@ -1698,7 +1698,12 @@ with tab5:
 
     # --- API Keys Checks ---
     telegram_ok = bool(os.environ.get("TELEGRAM_BOT_TOKEN") or getattr(settings, "telegram_bot_token", ""))
-    gemini_ok = bool(os.environ.get("GEMINI_API_KEY") or getattr(settings, "gemini_api_key", ""))
+    try:
+        import requests as _requests
+
+        ollama_ok = _requests.get(f"{settings.ollama_base_url}/api/tags", timeout=2).ok
+    except Exception:
+        ollama_ok = False
     fred_ok = bool(os.environ.get("FRED_API_KEY") or getattr(settings, "fred_api_key", ""))
     alpha_ok = bool(os.environ.get("ALPHA_VANTAGE_API_KEY") or getattr(settings, "alpha_vantage_api_key", ""))
     email_enabled = bool(getattr(settings, "email_alerts_enabled", False) or os.environ.get("EMAIL_ALERTS_ENABLED", "").lower() in ("true", "1"))
@@ -1811,7 +1816,7 @@ with tab5:
     with col_health1:
         st.markdown("#### 🔑 API Keys")
         st.metric("Telegram Bot", "🟢 Connected" if telegram_ok else "🔴 Not configured")
-        st.metric("Gemini AI", "🟢 Connected" if gemini_ok else "🔴 Not configured")
+        st.metric("Local AI (Ollama)", "🟢 Running" if ollama_ok else "🔴 Not running")
         st.metric("FRED Macro Data", "🟢 Connected" if fred_ok else "🔴 Not configured")
         st.metric("Alpha Vantage", "🟢 Connected" if alpha_ok else "🔴 Not configured")
         st.metric("Email Alerts", "🟢 Enabled" if email_enabled else "🔴 Disabled")

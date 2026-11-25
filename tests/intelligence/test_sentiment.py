@@ -249,24 +249,51 @@ def test_sentiment_network_failure_graceful():
     assert result.is_veto is False
 
 
-def test_fingpt_sentiment_bullish():
-    from src.intelligence.sentiment import get_fingpt_sentiment
-    result = get_fingpt_sentiment("Company beats earnings by 20%")
-    assert isinstance(result, dict)
-    assert "score" in result
-    assert "label" in result
-    assert "source" in result
+@pytest.fixture(autouse=False)
+def fresh_llm_state(monkeypatch):
+    """Reset the local-LLM cooldown so tests do not depend on each other."""
+    from src.intelligence import sentiment
+
+    monkeypatch.setattr(sentiment, "_llm_unavailable_until", 0.0)
+    return sentiment
+
+
+@pytest.mark.parametrize(
+    "reply, label, score",
+    [
+        ("BULLISH", "BULLISH", 0.6),
+        ("bearish.", "BEARISH", -0.6),
+        ("The sentiment is BULLISH", "BULLISH", 0.6),
+        ("NEUTRAL", "NEUTRAL", 0.0),
+        ("BULLISH or BEARISH, hard to say", "NEUTRAL", 0.0),  # mixed: no signal
+        ("I cannot tell", "NEUTRAL", 0.0),
+    ],
+)
+def test_fingpt_sentiment_parses_local_llm_reply(fresh_llm_state, reply, label, score):
+    with patch("src.llm.ollama_client.chat", return_value=reply) as chat:
+        result = fresh_llm_state.get_fingpt_sentiment("Company beats earnings by 20%")
+    assert result == {"score": score, "label": label, "source": "fingpt"}
+    assert chat.call_args.kwargs["temperature"] == 0.0
+
+
+def test_fingpt_sentiment_falls_back_to_vader_when_ollama_down(fresh_llm_state):
+    from src.llm.ollama_client import OllamaError
+
+    with patch("src.llm.ollama_client.chat", side_effect=OllamaError("down")):
+        result = fresh_llm_state.get_fingpt_sentiment("Market crashes today")
+    assert result["source"] == "vader_fallback"
     assert result["label"] in ["BULLISH", "BEARISH", "NEUTRAL"]
 
 
-def test_fingpt_sentiment_fallback_no_api():
-    from src.intelligence.sentiment import get_fingpt_sentiment
-    import unittest.mock as mock
-    with mock.patch("google.genai.Client") as m:
-        m.side_effect = Exception("API unavailable")
-        result = get_fingpt_sentiment("Market crashes today")
-        assert result["source"] == "vader_fallback"
-        assert result["label"] in ["BULLISH", "BEARISH", "NEUTRAL"]
+def test_fingpt_sentiment_skips_llm_during_cooldown_after_failure(fresh_llm_state):
+    """One failure must not make every later headline wait on a dead model."""
+    from src.llm.ollama_client import OllamaError
+
+    with patch("src.llm.ollama_client.chat", side_effect=OllamaError("down")) as chat:
+        fresh_llm_state.get_fingpt_sentiment("first headline")
+        fresh_llm_state.get_fingpt_sentiment("second headline")
+        fresh_llm_state.get_fingpt_sentiment("third headline")
+    assert chat.call_count == 1
 
 
 def test_historical_replay_no_live_news_leakage():
