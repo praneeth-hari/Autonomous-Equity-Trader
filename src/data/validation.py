@@ -104,24 +104,53 @@ def live_validation_lookback_days() -> int:
 
 # ── NYSE calendar helper ───────────────────────────────────────────────────────
 
-def _get_nyse_trading_days(start_date: str, end_date: str) -> Set[str]:
-    """
-    Return the set of valid NYSE trading days (as 'YYYY-MM-DD' strings)
-    between start_date and end_date, inclusive on both ends.
+_NYSE_CALENDAR = None  # loaded once, on first use
 
-    Uses pandas' built-in USFederalHolidayCalendar to exclude US federal
-    holidays (New Year's, MLK Day, Presidents' Day, Good Friday, Memorial Day,
-    Juneteenth, Independence Day, Labor Day, Thanksgiving, Christmas) plus
-    weekends. No extra package required — pandas is already a core dependency.
-    """
+
+def _nyse_calendar():
+    """The real NYSE exchange calendar (exchange_calendars), or None if it cannot be loaded."""
+    global _NYSE_CALENDAR
+    if _NYSE_CALENDAR is None:
+        try:
+            import exchange_calendars as xc
+
+            # A wide fixed range so the calendar never "expires" under a long-running process or an old backtest.
+            _NYSE_CALENDAR = xc.get_calendar("XNYS", start="2000-01-01", end="2035-12-31")
+        except Exception as exc:  # noqa: BLE001 - validation must never crash a run over its calendar
+            logger.warning("NYSE exchange calendar unavailable (%s); using the legacy holiday approximation.", exc)
+            _NYSE_CALENDAR = False
+    return _NYSE_CALENDAR or None
+
+
+def _legacy_trading_days(start_date: str, end_date: str) -> Set[str]:
+    """Fallback only. pandas' USFederalHolidayCalendar is NOT the NYSE calendar: it wrongly treats Columbus Day
+    and Veterans Day as closed and misses Good Friday and one-off closures, so it causes false 'missing day' warnings."""
     cal = USFederalHolidayCalendar()
     start = pd.Timestamp(start_date)
     end = pd.Timestamp(end_date)
     holidays = cal.holidays(start=start, end=end)
-    # All weekdays in range, then subtract holidays
     all_bdays = pd.bdate_range(start=start, end=end)
     trading_days = all_bdays[~all_bdays.isin(holidays)]
     return set(trading_days.strftime("%Y-%m-%d"))
+
+
+def _get_nyse_trading_days(start_date: str, end_date: str) -> Set[str]:
+    """
+    Return the set of valid NYSE trading days (as 'YYYY-MM-DD' strings) between start_date and end_date,
+    inclusive on both ends, from the real NYSE exchange calendar (holidays, Good Friday, one-off closures).
+    Falls back to the legacy approximation, with a warning, if the calendar cannot be used.
+    """
+    cal = _nyse_calendar()
+    if cal is not None:
+        try:
+            lo = max(pd.Timestamp(start_date), cal.first_session)
+            hi = min(pd.Timestamp(end_date), cal.last_session)
+            if lo <= hi:
+                return set(cal.sessions_in_range(lo, hi).strftime("%Y-%m-%d"))
+            return set()
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("NYSE calendar lookup failed (%s); using the legacy holiday approximation.", exc)
+    return _legacy_trading_days(start_date, end_date)
 
 
 # ── Result dataclass ───────────────────────────────────────────────────────────
