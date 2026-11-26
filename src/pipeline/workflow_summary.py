@@ -132,7 +132,7 @@ def parse_audit_fields(audit_text: str) -> Dict[str, str]:
             fields[key] = clean_val
 
     # Extract errors section if present
-    err_section = re.search(r"### ⚠ Errors\s*\n((?:- .*\n?)+)", audit_text)
+    err_section = re.search(r"### (?:⚠ Errors|ℹ Skip reason)\s*\n((?:- .*\n?)+)", audit_text)
     if err_section:
         fields["errors"] = err_section.group(1).strip()
 

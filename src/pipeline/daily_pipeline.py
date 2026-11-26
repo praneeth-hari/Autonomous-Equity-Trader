@@ -171,6 +171,8 @@ class DailyPipelineResult:
 
     def to_markdown(self) -> str:
         """Format the daily run result as a human-readable markdown audit report."""
+        if self.regime in SKIPPED_REGIMES:
+            return self._skipped_markdown()
         sells = [f for f in self.fills if f.action == "SELL"]
         buys = [f for f in self.fills if f.action == "BUY"]
         realized_pnl = sum(f.net_pnl for f in sells)
@@ -219,6 +221,26 @@ class DailyPipelineResult:
             for e in self.errors:
                 lines.append(f"- {e}")
 
+        return "\n".join(lines)
+
+    def _skipped_markdown(self) -> str:
+        """A skipped day (market closed, already run) did nothing, so say that plainly.
+
+        No data was fetched (so nothing was "bad"), the portfolio was not loaded (so there are no
+        cash/equity figures to show, and printing $0 would look like the money was gone), and the
+        reason is a note, not an error.
+        """
+        lines = [
+            f"## Daily Pipeline Audit — {self.run_date}",
+            "",
+            f"- Status: **{self.status}**",
+            f"- Market Regime: **{self.regime}**",
+            "",
+            "Nothing was done today: no data fetched, no orders, no fills.",
+            "Portfolio unchanged (not loaded on a skipped day; see the last trading day's snapshot).",
+        ]
+        if self.errors:
+            lines += ["", "### ℹ Skip reason"] + [f"- {e}" for e in self.errors]
         return "\n".join(lines)
 
 
@@ -397,7 +419,7 @@ def _run_daily_pipeline_internal(
                 run_date=run_date,
                 tickers_fetched=0,
                 tickers_valid=0,
-                tickers_skipped=len(tickers),
+                tickers_skipped=0,  # nothing was fetched, so nothing was rejected as bad data
                 regime="SKIPPED_MARKET_CLOSED",
                 orders_generated=0,
                 fills=[],

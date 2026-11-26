@@ -188,6 +188,38 @@ def test_status_is_derived_for_early_returns():
     assert _result(regime="UNKNOWN", errors=["CRITICAL: SPY fetch failed"]).status == "FAILED"
 
 
+def test_holiday_summary_says_market_closed_not_errors_or_zero_money():
+    reason = "Market Closed (US): 2026-11-26 is a recognized NYSE market holiday."
+    md = dp.DailyPipelineResult(D, 0, 0, 0, "SKIPPED_MARKET_CLOSED", 0, [], [], 0.0, 0.0, [reason]).to_markdown()
+    assert "Status: **SKIPPED**" in md and "SKIPPED_MARKET_CLOSED" in md
+    assert "### ℹ Skip reason" in md and reason in md
+    assert "Errors" not in md                 # a holiday is not an error
+    assert "$0" not in md                     # the portfolio was not loaded; $0 would look like money vanished
+    assert "bad data" not in md               # nothing was fetched, so nothing was rejected
+    assert "Portfolio unchanged" in md
+
+
+def test_holiday_skip_reason_still_reaches_the_workflow_summary():
+    from src.pipeline.workflow_summary import parse_audit_fields
+    reason = "Market Closed (US): holiday."
+    md = dp.DailyPipelineResult(D, 0, 0, 0, "SKIPPED_MARKET_CLOSED", 0, [], [], 0.0, 0.0, [reason]).to_markdown()
+    fields = parse_audit_fields(md)
+    assert fields["status"] == "SKIPPED" and fields["regime"] == "SKIPPED_MARKET_CLOSED"
+    assert reason in fields["errors"]
+
+
+def test_trading_day_summary_is_unchanged():
+    md = _result("SUCCESS").to_markdown()
+    assert "Skipped (bad data): **0**" in md and "- Cash: **$10000.0000**" in md
+
+
+def test_scheduler_log_lines_are_not_printed_twice():
+    import logging
+    root_handlers = logging.getLogger().handlers
+    assert root_handlers, "the repository module configures the root logger on import"
+    assert sch.logger.handlers == [] or not sch.logger.propagate
+
+
 def test_scheduler_event_and_dashboard_show_degraded(fresh_db):
     from src.services.data_loader import get_last_pipeline_status
 

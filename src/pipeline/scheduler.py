@@ -50,7 +50,9 @@ from src.db.cloud_db import verify_ci_database_guard
 from src.pipeline.daily_pipeline import DailyPipelineResult, run_daily_pipeline
 
 logger = logging.getLogger("src.pipeline.scheduler")
-if not logger.handlers:
+# Only add a handler when nothing above us prints already; otherwise every line appears twice in the log
+# (once from this handler, once from the root handler the repository module sets up).
+if not logger.handlers and not logging.getLogger().handlers:
     handler = logging.StreamHandler(sys.stderr)
     handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s"))
     logger.addHandler(handler)
