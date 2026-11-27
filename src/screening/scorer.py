@@ -186,7 +186,6 @@ def _score_cash_flow(data: FundamentalData, is_bank: bool) -> Tuple[PillarScore,
     if is_bank:
         # Bank cash flows are evaluated via operating profitability and dividend continuity
         roe = data.return_on_equity
-        div = data.dividend_yield
         if roe is not None and roe > 0.08:
             return PillarScore("Cash Flow", 20, passed=True, reason=f"Positive bank capital accumulation (ROE {roe*100:.1f}%)."), missing
         return PillarScore("Cash Flow", 10, passed=False, reason="Constrained bank earnings generation."), missing

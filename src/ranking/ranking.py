@@ -279,30 +279,9 @@ def rank_candidates(
     else:
         probs = raw_probs
 
-    # 4b. Performance-based ensemble weighting (Section 9 Item 4)
-    # If multiple models are available, combine their probabilities using
-    # performance-based weights from walk-forward evaluation.
-    model_probabilities = {active_model.model_type: probs}
-    try:
-        from src.ml.train import get_performance_weights, get_weighted_ensemble_probability
-        from src.db import repository
-        wf_history = repository.get_walk_forward_history()
-        if not wf_history.empty:
-            model_aucs = {}
-            for _, row in wf_history.iterrows():
-                m = row["model_type"]
-                if m not in model_aucs:
-                    model_aucs[m] = []
-                model_aucs[m].append(float(row["roc_auc"]))
-            avg_aucs = {m: sum(v)/len(v) for m, v in model_aucs.items()}
-            weights = get_performance_weights(avg_aucs)
-            if weights and len(model_probabilities) > 1:
-                final_probability = get_weighted_ensemble_probability(
-                    model_probabilities, weights
-                )
-                logger.info("Performance ensemble weights: %s", weights)
-    except Exception as exc:
-        logger.warning("Performance ensemble failed, using default: %s", exc)
+    # V1 scores with the single frozen model only. (A performance-weighted ensemble branch used to sit
+    # here; with one model it could never run and its result was never used, so it was removed.
+    # The helpers remain in src/ml/train.py: get_performance_weights, get_weighted_ensemble_probability.)
 
     # 5. Apply Section 5 Intelligence Modifiers & Log Breakdown
     base_probs_list: List[float] = []

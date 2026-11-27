@@ -108,7 +108,6 @@ class HeldPosition:
 
             # Update highest price and trailing stop if new high
             if self.current_price > self.highest_price_since_entry:
-                old_high = self.highest_price_since_entry
                 old_trail = self.trailing_stop_price
                 self.highest_price_since_entry = float(self.current_price)
                 new_trail = round(self.highest_price_since_entry * (1.0 - trail_pct), 4)

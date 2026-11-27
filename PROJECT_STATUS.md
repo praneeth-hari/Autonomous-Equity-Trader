@@ -23,7 +23,7 @@ Full table: `docs/ENGINEERING_AUDIT.md` §2.
 - **Implemented:** daily pipeline, lag rule, NYSE calendar, frozen model + integrity checks, risk engine, paper broker,
   backtester with SPY known-answer test, approvals, kill switch, API, React app, Telegram alerts, backups, pre-flight.
 - **Partial:** data gate (flawed spike rule, frozen), heartbeat (not configured), backups (same disk), SHAP (on demand only).
-- **Broken:** performance-weighted ensemble (dead code). (CI fixed 2026-11-27.)
+- **Broken:** none known. (CI fixed and the dead ensemble branch removed on 2026-11-27.)
 - **Unverified:** live effect of intelligence layers. (First unattended trading-day run happened 2026-11-27, see below.)
 
 ## Known bugs and limitations
@@ -35,10 +35,10 @@ Full table: `docs/ENGINEERING_AUDIT.md` §2.
 
 ## Engineering quality (summary)
 Strong: leakage controls, safety-first risk engine, test isolation incl. production-DB write guard, honest reporting.
-Weak: a few large modules, dead code, docs partly stale, no type checking.
+Weak: a few large modules, docs partly stale, no type checking.
 
 ## Roadmap progress
-Current phase: **Phase 2 done** (Phases 1–2 approved 2026-11-27); next is Phase 3 (dead code, lint rules).
+Current phase: **Phase 3 done** (Phases 1–3 approved 2026-11-27); next is Phase 4 (second backup copy, API guard, dependency split).
 Done: T1.2 CI green (run 45924755642), T1.4 history re-joined, T2.2 data-dependent tests skip on a fresh clone.
 Waiting on you: T1.1 rotate Telegram token, T1.3 healthchecks.io check.
 

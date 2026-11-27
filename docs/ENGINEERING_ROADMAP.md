@@ -26,8 +26,8 @@ Status: ☐ pending · ◐ in progress · ☑ done (with evidence)
 
 | ID | Pri | Task | Files | Acceptance criteria | Verify by | Depends | Effort | Status |
 |---|---|---|---|---|---|---|---|---|
-| T3.1 | P2 | Remove dead ensemble branch and unused variables; fix shadowed imports; correct the walk-forward comment | `ranking.py`, `risk_engine.py`, `paper_broker.py`, `evaluate.py`, `data_loader.py`, `tune.py`, `scorer.py`, `gate_review.py` | `ruff --select F841,F811` clean on `src`; golden predictions unchanged; full suite passes | ruff + envcheck + pytest | T2.1 | 1 h | ☐ |
-| T3.2 | P2 | Add F841/F811 to the lint gate so they stay fixed | `ruff.toml` | Gate fails on a new unused variable | `ruff check` | T3.1 | 10 min | ☐ |
+| T3.1 | P2 | Remove dead ensemble branch and unused variables; fix shadowed imports; correct the walk-forward comment | `ranking.py`, `risk_engine.py`, `paper_broker.py`, `evaluate.py`, `data_loader.py`, `tune.py`, `scorer.py`, `gate_review.py` | `ruff --select F841,F811` clean on `src`; golden predictions unchanged; full suite passes | ruff + envcheck + pytest | T2.1 | 1 h | ☑ 2026-11-27: 16 dead assignments removed (incl. the ensemble branch and 2 in root scripts), comment corrected; golden predictions identical (diff 0.0); full suite 923 passed, 0 failed |
+| T3.2 | P2 | Add F841/F811 to the lint gate so they stay fixed | `ruff.toml` | Gate fails on a new unused variable | `ruff check` | T3.1 | 10 min | ☑ 2026-11-27: F811, F841, B007 added for application code (tests exempt); `ruff check` passes |
 
 ## Phase 4: Operations hardening (recommended)
 
@@ -51,6 +51,10 @@ Status: ☐ pending · ◐ in progress · ☑ done (with evidence)
 | T6.2 | P2 | Write a short current `docs/ARCHITECTURE.md`; move phase histories (`CORE_DOCUMENTATION`, `SIMPLE_GUIDE`, `GITHUB_SETUP`) to `docs/history/` with a note | docs | One current page explains components and the nightly flow | read-through | none | 1–2 h | ☐ |
 | T6.3 | P3 | Untrack `scratch/`; delete the 18 ignored `fix_test*.py` files (ask first: they are yours) | repo root | Clean root listing | `git ls-files` | approval | 10 min | ☐ |
 | T6.4 | P3 | Forward paper-trading record page: days run, trades, net return vs SPY, with the optimistic label | API + web or a report script | Shows only measured numbers | tests + real data | 30+ trading days of runs | 2 h | ☐ |
+
+## Found while doing Phase 3
+
+- T3.3 P3: `python -m src.ops.gate_review --markdown` accepts the flag but ignores it (`src/ops/gate_review.py` main). Either honour it or drop it.
 
 ## Optional (only if you want more depth)
 

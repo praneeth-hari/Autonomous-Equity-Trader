@@ -114,7 +114,6 @@ def run_health_check() -> int:
         expected_prev_date = (today - timedelta(days=1)).strftime("%Y-%m-%d")
 
     LOGS_DIR.mkdir(exist_ok=True)
-    today_log_path = LOGS_DIR / f"daily_run_{today_str}.log"
     latest_log = find_latest_daily_log()
 
     db_info = get_db_health()

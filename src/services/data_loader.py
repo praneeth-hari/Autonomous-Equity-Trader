@@ -8,7 +8,7 @@ and backtesting engine. Shared by the read-only API, reports and the chatbot; ke
 from __future__ import annotations
 
 import logging
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -250,8 +250,7 @@ def get_recent_trades_df(limit: int = 50, market: str = "US") -> pd.DataFrame:
         })
 
     df = pd.DataFrame(rows)
-    import datetime
-    cutoff = (datetime.datetime.now() - datetime.timedelta(days=90)).strftime("%Y-%m-%d")
+    cutoff = (datetime.now() - timedelta(days=90)).strftime("%Y-%m-%d")
     if not df.empty and "date" in df.columns:
         df = df[df["date"] >= cutoff]
 
@@ -284,8 +283,7 @@ def get_recent_orders_df(limit: int = 50, market: str = "US") -> pd.DataFrame:
         })
 
     df = pd.DataFrame(rows)
-    import datetime
-    cutoff = (datetime.datetime.now() - datetime.timedelta(days=90)).strftime("%Y-%m-%d")
+    cutoff = (datetime.now() - timedelta(days=90)).strftime("%Y-%m-%d")
     if not df.empty and "date" in df.columns:
         df = df[df["date"] >= cutoff]
 
@@ -806,7 +804,6 @@ def get_portfolio_vs_spy_chart_data(market: str = "US") -> pd.DataFrame:
       deficit: float ($)
     """
     snapshots = repository.get_portfolio_snapshots(limit=1000, market=market)
-    cols = ["date", "My Portfolio", "SPY Benchmark", "underperforming", "deficit"]
     if not snapshots:
         today_str = date.today().strftime("%Y-%m-%d")
         c0 = float(settings.initial_capital)

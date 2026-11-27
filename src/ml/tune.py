@@ -435,7 +435,7 @@ def main() -> None:
 
     target = args.model.lower()
     if target == TUNE_MODEL_ALL:
-        results = tune_all(
+        tune_all(
             dataset_df=dataset_df,
             n_trials=args.trials,
             timeout=args.timeout,

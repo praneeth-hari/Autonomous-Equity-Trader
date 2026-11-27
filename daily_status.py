@@ -47,7 +47,6 @@ def generate_status_report() -> Tuple[str, Dict[str, Any]]:
     current_val = float(current_snap["total_value"]) if current_snap else float(settings.initial_capital)
     current_cash = float(current_snap["cash"]) if current_snap else float(settings.initial_capital)
     current_slip = float(current_snap.get("total_slippage_cost", 0.0) or 0.0) if current_snap else 0.0
-    snap_date = current_snap["run_date"] if current_snap else "No snapshot"
 
     if prev_snap:
         prev_val = float(prev_snap["total_value"])

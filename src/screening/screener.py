@@ -45,7 +45,7 @@ def run_fundamental_screen(
     )
 
     scorecards: List[FundamentalScorecard] = []
-    for ticker, fund_data in funds.items():
+    for fund_data in funds.values():
         card = score_fundamentals(fund_data)
         scorecards.append(card)
 

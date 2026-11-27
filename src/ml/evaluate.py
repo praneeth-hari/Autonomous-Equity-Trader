@@ -384,16 +384,15 @@ def run_walk_forward_evaluation(
                 f"and test_start ({test_min_date})."
             )
 
-        X_train = train_df[FEATURE_COLUMNS].copy()
-        y_train = train_df[LABEL_COLUMN].astype(int).values
-
-        X_test = test_df[FEATURE_COLUMNS].copy()
         y_test = test_df[LABEL_COLUMN].astype(int).values
 
         for m_type in model_types:
             # Train model on this window's train partition
             train_sub_df = train_df[["date", "ticker"] + FEATURE_COLUMNS + [LABEL_COLUMN]].copy()
-            # Use test_ratio=0.10 inside train_model just to satisfy the function, but fit on full train partition
+            # Note: train_model always makes its own chronological split, so with test_ratio=0.10 the model is
+            # fit on roughly the first 90% of this window's train partition (minus the embargo gap), not all of
+            # it. That costs some training data but leaks nothing. Kept as is so recorded walk-forward results
+            # stay reproducible; changing it would change the published benchmark.
             fitted = train_model(train_sub_df, model_type=m_type, test_ratio=0.10, gap_days=horizon)
 
             # Predict on this window's unseen test partition

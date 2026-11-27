@@ -121,7 +121,7 @@ def _fmt(e: Event) -> str:
 def main(argv: Optional[List[str]] = None) -> int:
     p = argparse.ArgumentParser(description="Report what the spike rule does to the universe.")
     p.add_argument("--markdown", action="store_true")
-    a = p.parse_args(argv)
+    p.parse_args(argv)
     today = date.today()
     tickers = list(settings.get_universe("US")) + [settings.get_benchmark("US")]
     events = review(tickers, today)

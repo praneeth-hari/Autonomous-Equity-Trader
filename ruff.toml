@@ -11,4 +11,12 @@ select = [
     "F63",  # invalid comparisons and assertions (e.g. `assert (x, "msg")`)
     "F7",   # misplaced return/yield/break and similar
     "F82",  # undefined names
+    "F811", # a name redefined before use (e.g. a local import shadowing a module-level one)
+    "F841", # a value computed and never used: often dead or half-finished logic
+    "B007", # a loop variable that is never used
 ]
+
+[lint.per-file-ignores]
+# In tests an unused result or a re-import is usually deliberate (calling for the side effect), so these
+# rules guard application code only.
+"tests/**" = ["F811", "F841", "B007"]

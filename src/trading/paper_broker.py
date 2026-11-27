@@ -88,7 +88,6 @@ class Position:
     def update_high_and_trailing_stop(self, current_price: float) -> bool:
         """Update highest price since entry and trailing stop if new high reached."""
         if current_price > self.highest_price_since_entry:
-            old_high = self.highest_price_since_entry
             old_trail = self.trailing_stop_price
             self.highest_price_since_entry = float(current_price)
             trail_pct = getattr(settings, "trailing_stop_pct", 0.08)
