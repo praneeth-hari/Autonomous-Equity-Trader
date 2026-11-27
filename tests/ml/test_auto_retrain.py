@@ -15,6 +15,7 @@ from config.settings import settings
 from src.db import repository
 from src.ml.evaluate import ACTIVE_METADATA_FILENAME, ACTIVE_MODEL_FILENAME
 from src.ml.retrain import is_first_saturday, run_automatic_retrain
+from tests.local_data import needs_price_history
 from src.ml.train import (
     BACKUP_DIR_NAME,
     BACKUP_MODEL_FILENAME,
@@ -130,6 +131,7 @@ def test_run_automatic_retrain_skipped_not_scheduled(tmp_models_dir):
     assert res["status"] == "SKIPPED_NOT_SCHEDULED"
 
 
+@needs_price_history
 @patch("src.ml.retrain.notify")
 @patch("src.ml.retrain.send_alert")
 def test_run_automatic_retrain_execution_flow(mock_send_alert, mock_notify, tmp_models_dir):

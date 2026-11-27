@@ -11,6 +11,7 @@ import pytest
 from config.settings import settings
 from src.features.engineer import FEATURE_COLUMNS
 from src.ml.dataset import LABEL_COLUMN, build_dataset, load_survivorship_data
+from tests.local_data import needs_survivorship_csvs
 from src.ml.evaluate import define_standard_windows
 from src.ml.train import (
     MODEL_TYPE_BASELINE,
@@ -42,6 +43,7 @@ def _make_dummy_dataset(n_days: int = 550, ticker: str = "AAPL") -> pd.DataFrame
 
 # ── Item 10: Survivorship Bias Ingestion Integration ───────────────────────────
 
+@needs_survivorship_csvs
 def test_load_survivorship_data_real_files():
     """Verify loading real historical CSV data for FRCB, TWTR, and CELG."""
     surv_df = load_survivorship_data()

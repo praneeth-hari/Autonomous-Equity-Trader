@@ -30,6 +30,7 @@ from src.backtest.backtest import (
 )
 from src.data.market_data import fetch_ticker_data
 from src.data.validation import validate_ticker_data
+from tests.local_data import needs_saved_baseline_models
 
 
 def _with_warmup(df: pd.DataFrame, n: int = 260, rise: float = 0.0) -> pd.DataFrame:
@@ -232,6 +233,7 @@ def test_4_full_pipeline_trade_lifecycle_integration():
     assert math.isclose(result.metrics.final_equity, 50.0 + expected_net_pnl, abs_tol=1e-4)
 
 
+@needs_saved_baseline_models
 def test_5_out_of_sample_model_enforcement_and_leakage_detection():
     """
     Test 5: Out-of-Sample Model Enforcement & Leakage Detection (§1.5).
