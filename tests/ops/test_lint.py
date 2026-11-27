@@ -44,7 +44,7 @@ def test_gitleaks_config_extends_the_default_rules_and_only_allows_known_fake_fi
     allowed = [ln.strip() for ln in cfg.splitlines() if ln.strip().startswith("'''")]
     assert allowed and all(("tests/" in a or "docs/" in a) for a in allowed)  # never application code
     for a in allowed:
-        assert (ROOT / a.strip("',").replace("\.", ".")).exists(), f"allow-listed file no longer exists: {a}"
+        assert (ROOT / a.strip("',").replace("\\.", ".")).exists(), f"allow-listed file no longer exists: {a}"
 
 
 def test_dev_tools_are_kept_out_of_the_runtime_requirements():

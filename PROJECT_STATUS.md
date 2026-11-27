@@ -23,23 +23,23 @@ Full table: `docs/ENGINEERING_AUDIT.md` §2.
 - **Implemented:** daily pipeline, lag rule, NYSE calendar, frozen model + integrity checks, risk engine, paper broker,
   backtester with SPY known-answer test, approvals, kill switch, API, React app, Telegram alerts, backups, pre-flight.
 - **Partial:** data gate (flawed spike rule, frozen), heartbeat (not configured), backups (same disk), SHAP (on demand only).
-- **Broken:** CI (dependency-audit step fails, Python tests never run on GitHub); performance-weighted ensemble (dead code).
+- **Broken:** performance-weighted ensemble (dead code). (CI fixed 2026-11-27.)
 - **Unverified:** live effect of intelligence layers. (First unattended trading-day run happened 2026-11-27, see below.)
 
 ## Known bugs and limitations
 - Strategy trails SPY in backtests; loses money without TSLA. Forward record is short and has gaps (nightly job was
   broken until 2026-11-25).
-- One flaky test (`test_ops_routes.py ... [headers1]`, failed once, not reproduced since). Tests needing git-ignored data now skip with a reason.
+- One flaky test (`test_ops_routes.py ... [headers1]`): failed once under severe memory pressure, 0 failures in 20 reruns; it now reports full details if it fails again. Tests needing git-ignored data now skip with a reason.
 - Runs only while this PC is on; no dead-man's switch yet.
 - Telegram token was once logged; rotation pending (user).
 
 ## Engineering quality (summary)
 Strong: leakage controls, safety-first risk engine, test isolation incl. production-DB write guard, honest reporting.
-Weak: CI red, a few large modules, dead code, docs partly stale, no type checking.
+Weak: a few large modules, dead code, docs partly stale, no type checking.
 
 ## Roadmap progress
-Current phase: **Phase 1 in progress** (approved 2026-11-27).
-Done: T1.4 history re-joined, T2.2 data-dependent tests skip on a fresh clone. In progress: T1.2 CI fix (needs a push to confirm).
+Current phase: **Phase 2 done** (Phases 1–2 approved 2026-11-27); next is Phase 3 (dead code, lint rules).
+Done: T1.2 CI green (run 45924755642), T1.4 history re-joined, T2.2 data-dependent tests skip on a fresh clone.
 Waiting on you: T1.1 rotate Telegram token, T1.3 healthchecks.io check.
 
 ## Last verified state (2026-11-26)
@@ -48,7 +48,7 @@ Waiting on you: T1.1 rotate Telegram token, T1.3 healthchecks.io check.
   buys vetoed by the regime filter (SPY below 200-day); UNH rejected by the spike rule. Equity $9,731.56, all cash.
 - Lint gate (`ruff`, 4 real-bug rule groups): passes in CI; wider run shows 14 real findings (audit §3.2).
 - Nightly 2026-11-26: pre-flight all OK, backup OK, holiday skip correct (exit 0).
-- GitHub CI: failing at dependency audit (run 45740661692).
+- GitHub CI: green on 2026-11-27 (run 45924755642), Python tests now run in CI.
 
 ## Important decisions
 - V1 frozen 2026-09-26; no tuning, no real money, no cloud.

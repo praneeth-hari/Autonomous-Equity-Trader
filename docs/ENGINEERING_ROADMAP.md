@@ -11,7 +11,7 @@ Status: ☐ pending · ◐ in progress · ☑ done (with evidence)
 | ID | Pri | Task | Files | Acceptance criteria | Verify by | Depends | Effort | Status |
 |---|---|---|---|---|---|---|---|---|
 | T1.1 | P0 | Rotate the Telegram bot token (user does it) | `.env` | Old token revoked; new token works | `python -m src.alerts.watchdog test` sends a message | none | 5 min | ☐ |
-| T1.2 | P1 | Fix CI: upgrade pip/setuptools before `pip-audit` | `.github/workflows/tests.yml` | All 3 CI jobs green on push | `gh run list` shows success | none | 30 min | ◐ local fix done (pip/setuptools upgraded before audit); CI result pending push |
+| T1.2 | P1 | Fix CI: upgrade pip/setuptools before `pip-audit` | `.github/workflows/tests.yml` | All 3 CI jobs green on push | `gh run list` shows success | none | 30 min | ☑ 2026-11-27: run 45924755642 green (backend 7m48s incl. Python tests, web, secrets) |
 | T1.3 | P1 | Set up the dead man's switch (user creates the check; I verify) | `.env` | Ping received at start and end of a run | healthchecks.io shows pings; log no longer says "not configured" | none | 15 min | ☐ |
 | T1.4 | P1 | Re-join local and GitHub history (reset local `main` to `origin/main`, keep the rules file locally and ignored) | git only | `git merge-base main origin/main` returns a commit; normal `git push` works | git commands | approval (destructive) | 15 min | ☑ 2026-11-27: `git merge-base main origin/main` = `5063c52`; old history kept in branch `local-history-backup`; rules file kept local and ignored |
 
@@ -19,7 +19,7 @@ Status: ☐ pending · ◐ in progress · ☑ done (with evidence)
 
 | ID | Pri | Task | Files | Acceptance criteria | Verify by | Depends | Effort | Status |
 |---|---|---|---|---|---|---|---|---|
-| T2.1 | P2 | Find and fix the flaky approvals test | `tests/api/test_ops_routes.py`, maybe `src/api/ops_routes.py` | Passes 20 full-suite-order runs in a row | repeated `pytest tests/api` + one full run | none | 1–2 h | ☐ |
+| T2.1 | P2 | Find and fix the flaky approvals test | `tests/api/test_ops_routes.py`, maybe `src/api/ops_routes.py` | Passes 20 full-suite-order runs in a row | repeated `pytest tests/api` + one full run | none | 1–2 h | ◐ 2026-11-27: not reproduced (0 failures in 20 runs of `tests/api`, plus 2 clean full runs and CI). Only failure was under severe memory pressure; message was cut off. Test now reports which check failed and what came back; reopen if it recurs |
 | T2.2 | P2 | Skip data-dependent tests with a clear reason when the ignored data is absent | 3 test files | Fresh clone: those 3 show SKIPPED with reason; main folder: they still run and pass | run in a fresh worktree and in the main folder | T1.2 | 30 min | ☑ 2026-11-27 (pulled into Phase 1): main folder 3 passed; clean checkout full suite 918 passed, 0 failed, 6 skipped with reasons |
 
 ## Phase 3: Correctness and code clarity (essential, no behaviour change)

@@ -80,9 +80,15 @@ def test_when_approval_mode_is_off_a_decision_is_refused_not_silently_ignored(mo
     {"X-Requested-With": "XMLHttpRequest", "Origin": "http://127.0.0.1:5173"},
 ])
 def test_state_changing_routes_refuse_requests_that_do_not_come_from_the_web_app(headers):
-    assert client.post(f"/api/approvals/{BUY_ID}/approve", headers=headers).status_code == 403
-    assert client.post("/api/kill-switch", json={"enabled": True, "reason": "x"}, headers=headers).status_code == 403
-    assert approvals.load_decisions("US") == {}
+    # Each check reports what actually came back: this test failed once (2026-11-26, PC very short of memory)
+    # and the cause could not be reproduced, so a repeat must explain itself.
+    r = client.post(f"/api/approvals/{BUY_ID}/approve", headers=headers)
+    assert r.status_code == 403, f"approve with {headers}: {r.status_code} {r.text[:300]}"
+    r = client.post("/api/kill-switch", json={"enabled": True, "reason": "x"}, headers=headers)
+    assert r.status_code == 403, f"kill switch with {headers}: {r.status_code} {r.text[:300]}"
+    decisions = approvals.load_decisions("US")
+    assert decisions == {}, f"decisions written despite the refusal: {decisions} (file {approvals._path('US')})"
+    assert repository.load_kill_switch_state()[0] is False, "kill switch was switched on despite the refusal"
     assert client.get("/api/kill-switch").json()["enabled"] is False
 
 
