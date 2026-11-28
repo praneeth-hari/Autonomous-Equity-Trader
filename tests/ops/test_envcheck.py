@@ -19,7 +19,7 @@ def _req(tmp_path, text):
 
 
 def test_satisfied_requirements_pass_and_comments_extras_and_markers_are_handled(tmp_path):
-    f = _req(tmp_path, "# a comment\npandas>=1.0\npsycopg[binary]>=1.0    # trailing comment\nnot-a-real-pkg-xyz>=1 ; sys_platform == 'nonexistent-os'\n")
+    f = _req(tmp_path, "# a comment\npandas>=1.0\nsqlalchemy[asyncio]>=1.0    # trailing comment\nnot-a-real-pkg-xyz>=1 ; sys_platform == 'nonexistent-os'\n")
     res = ec.Result()
     ec.check_requirements(res, f)
     assert res.ok, res.problems
