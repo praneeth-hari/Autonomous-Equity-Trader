@@ -136,3 +136,56 @@ def test_non_sqlite_databases_are_refused_with_a_clear_message():
 def test_missing_database_is_an_error_not_an_empty_backup(tmp_path):
     with pytest.raises(bk.BackupError, match="not found"):
         bk.create_backup(f"sqlite:///{(tmp_path / 'nope.db').as_posix()}")
+
+
+# ── Second copy (BACKUP_MIRROR_DIR) ─────────────────────────────────────────────
+
+def test_mirror_gets_a_verified_copy_with_the_same_rows(world, tmp_path):
+    rep = bk.create_backup(world["url"], models_dir=world["models"])
+    m = bk.mirror_backup(rep.path, tmp_path / "mirror")
+    assert m.ok and m.path == tmp_path / "mirror" / rep.path.name
+    assert m.tables == rep.tables
+    assert not list((tmp_path / "mirror").glob("*.partial"))
+
+
+def test_mirror_prunes_by_count_and_never_touches_other_files(world, tmp_path):
+    mirror = tmp_path / "mirror"
+    mirror.mkdir()
+    (mirror / "my_own_copy.db").write_bytes(b"keep me")
+    t0 = datetime(2026, 11, 1, 3, 30)
+    for i in range(4):
+        rep = bk.create_backup(world["url"], now=t0 + timedelta(days=i), models_dir=world["models"])
+        assert bk.mirror_backup(rep.path, mirror, keep=2).ok
+    names = sorted(p.name for p in mirror.iterdir())
+    assert names == ["my_own_copy.db", "trader_20261103_033000.db", "trader_20261104_033000.db"]
+
+
+def test_mirror_refuses_the_backup_folder_itself(world):
+    rep = bk.create_backup(world["url"], models_dir=world["models"])
+    m = bk.mirror_backup(rep.path, rep.path.parent)
+    assert not m.ok and "another drive" in m.problems[0]
+
+
+def test_a_corrupt_mirror_copy_is_never_kept_under_a_backup_name(world, tmp_path, monkeypatch):
+    rep = bk.create_backup(world["url"], models_dir=world["models"])
+    monkeypatch.setattr(bk.shutil, "copy2", lambda src, dst: Path(dst).write_bytes(b"not a database"))
+    m = bk.mirror_backup(rep.path, tmp_path / "mirror")
+    assert not m.ok and "failed verification" in m.problems[0]
+    assert list((tmp_path / "mirror").iterdir()) == []
+
+
+def test_cli_alerts_when_the_mirror_fails_but_keeps_the_primary_backup(world, tmp_path, monkeypatch):
+    blocker = tmp_path / "not_a_folder"
+    blocker.write_text("a file where the mirror folder should be", encoding="utf-8")
+    monkeypatch.setattr(bk.settings, "db_url", world["url"])
+    monkeypatch.setattr(bk.settings, "data_models_dir", str(world["models"]))
+    monkeypatch.setattr(bk.settings, "backup_mirror_dir", str(blocker))
+    assert bk._main(["create"]) == 1                      # non-zero, so run_trader.bat sends the backup alert
+    assert len(bk.list_backups(world["db"])) == 1         # the primary backup still exists and counts
+
+
+def test_cli_without_a_mirror_behaves_as_before(world, monkeypatch):
+    monkeypatch.setattr(bk.settings, "db_url", world["url"])
+    monkeypatch.setattr(bk.settings, "data_models_dir", str(world["models"]))
+    monkeypatch.setattr(bk.settings, "backup_mirror_dir", "")
+    assert bk._main(["create"]) == 0

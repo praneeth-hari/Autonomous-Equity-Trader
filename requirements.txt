@@ -16,10 +16,8 @@ ta>=0.11.0
 scikit-learn>=1.5.0
 skops>=0.10                 # safe model format: a copy that cannot run code when loaded (src/ops/model_safe.py)
 xgboost>=2.1.0
-lightgbm>=4.5.0
 shap>=0.46.0
 optuna>=3.6.0
-kagglehub>=0.3.0
 
 # ── Sentiment & AI Intelligence ───────────────────────────────────────────────
 vaderSentiment>=3.3.2
@@ -34,8 +32,7 @@ quantstats>=0.0.80          # performance tear sheet against SPY (src/reports/te
 # ── Database ──────────────────────────────────────────────────────────────────
 sqlalchemy>=2.0.30
 pandera>=0.20               # declared rules for stored price data (src/data/schemas.py, src/ops/data_audit.py)
-psycopg[binary]>=3.1.18    # Modern PostgreSQL driver (Supabase default)
-psycopg2-binary>=2.9.9    # PostgreSQL driver (Cloud Supabase)
+psycopg2-binary>=2.9.9    # PostgreSQL driver (src/db/cloud_db.py always selects psycopg2)
 
 # ── Web API (backend for the web dashboard) ──────────────────────────────────
 fastapi>=0.115.0

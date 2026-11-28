@@ -13,7 +13,7 @@ from src.api.app import app
 from src.db import repository
 from src.pipeline import approvals
 
-client = TestClient(app)
+client = TestClient(app, base_url="http://127.0.0.1")  # the API answers only to local host names
 UI = {"X-Requested-With": "paper-trader", "Origin": "http://127.0.0.1:5173"}
 
 BUY = {"date": "2026-11-25", "ticker": "AAPL", "action": "BUY", "shares": 4.0, "reference_price": 200.0, "gross_value": 800.0, "reason": "QUALIFIED_CONVICTION_BUY"}

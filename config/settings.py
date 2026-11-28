@@ -400,6 +400,12 @@ class Settings(BaseSettings):
         default="",
         description="Ping URL of your healthchecks.io check (dead man's switch). Empty = off. Treat it like a secret.",
     )
+    backup_mirror_dir: str = Field(
+        default="",
+        description="Optional second folder (ideally another drive, USB disk or synced folder) that receives a "
+                    "verified copy of each nightly backup, so one disk failure cannot take the database and its "
+                    "backups together. Empty = off.",
+    )
 
     # PSI drift protocol (Item 9)
     psi_monitor_threshold: float = Field(

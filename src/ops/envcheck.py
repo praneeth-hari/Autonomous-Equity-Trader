@@ -10,7 +10,7 @@ decisions: a missing or too-old package, a model whose predictions differ from t
 a damaged database. Warnings (exit 0) are worth knowing about but must not stop trading:
 low memory or disk, a library version that differs from the lock file.
 
-Imports are kept light on purpose (no shap, lightgbm or optuna): this runs every night before the
+Imports are kept light on purpose (no shap or optuna): this runs every night before the
 pipeline and must not itself use the scarce memory the pipeline needs.
 """
 
@@ -110,7 +110,7 @@ def check_imports(res: Result) -> None:
         res.problems.append("Core packages cannot be imported: " + "; ".join(failed))
     else:
         res.info.append("Core packages import cleanly")
-    for name in ("xgboost", "lightgbm", "shap", "yfinance", "vaderSentiment", "telegram", "apscheduler"):
+    for name in ("xgboost", "shap", "yfinance", "vaderSentiment", "telegram", "apscheduler"):
         if importlib.util.find_spec(name) is None:
             res.problems.append(f"{name} is not installed.")
 

@@ -33,9 +33,9 @@ Status: ☐ pending · ◐ in progress · ☑ done (with evidence)
 
 | ID | Pri | Task | Files | Acceptance criteria | Verify by | Depends | Effort | Status |
 |---|---|---|---|---|---|---|---|---|
-| T4.1 | P2 | Optional second backup copy on another drive or folder (`BACKUP_MIRROR_DIR`) | `src/ops/backup.py`, `config/settings.py`, test | When set, newest backup is mirrored and verified; when empty, nothing changes | unit test + one real run | none | 1 h | ☐ |
-| T4.2 | P3 | Guard `/api/chat` with the marker header; reject unexpected `Host` headers | `src/api/app.py`, `ops_routes.py`, web `api.ts`, tests | Requests without header or with a foreign Host get 403; web app still works | API tests + Playwright | none | 1 h | ☐ |
-| T4.3 | P3 | Move research-only libraries (xgboost, lightgbm, optuna, shap?) to `requirements-research.txt`; drop unused `kagglehub` | requirements files, lock, envcheck | Nightly pre-flight passes; research scripts document the extra install | envcheck + full suite | T1.2 | 1 h | ☐ |
+| T4.1 | P2 | Optional second backup copy on another drive or folder (`BACKUP_MIRROR_DIR`) | `src/ops/backup.py`, `config/settings.py`, test | When set, newest backup is mirrored and verified; when empty, nothing changes | unit test + one real run | none | 1 h | ☑ 2026-11-27: `BACKUP_MIRROR_DIR` (off by default); copy verified at the mirror, pruned by count, never mirrors into the backup folder; a failed mirror exits 1 so the nightly alert fires; 6 new tests |
+| T4.2 | P3 | Guard `/api/chat` with the marker header; reject unexpected `Host` headers | `src/api/app.py`, `ops_routes.py`, web `api.ts`, tests | Requests without header or with a foreign Host get 403; web app still works | API tests + Playwright | none | 1 h | ☑ 2026-11-27: `/api/chat` needs the web app's marker header; `TrustedHostMiddleware` refuses Host names other than 127.0.0.1/localhost; 11 new tests; checked live through Vite (200 via proxy, 403 chat without header, 400 foreign Host) |
+| T4.3 | P3 | Move research-only libraries (xgboost, lightgbm, optuna, shap?) to `requirements-research.txt`; drop unused `kagglehub` | requirements files, lock, envcheck | Nightly pre-flight passes; research scripts document the extra install | envcheck + full suite | T1.2 | 1 h | ☑ 2026-11-27 (narrowed): xgboost, shap and apscheduler are imported by the live path and optuna by tuning tests, so they stay. Removed the unused kagglehub, lightgbm and psycopg v3; pre-flight passes with 27 packages |
 
 ## Phase 5: Data-gate decision (needs your decision; changes frozen behaviour)
 

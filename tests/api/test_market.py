@@ -10,7 +10,7 @@ from fastapi.testclient import TestClient
 from src.api.app import app
 from src.services import market_service as ms
 
-client = TestClient(app)
+client = TestClient(app, base_url="http://127.0.0.1")  # the API answers only to local host names
 
 
 @pytest.fixture(autouse=True)

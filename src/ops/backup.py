@@ -154,6 +154,42 @@ def prune(db_file: Path, keep: int = DEFAULT_KEEP) -> List[Path]:
     return old
 
 
+def mirror_backup(backup: Path, mirror_dir: Path, keep: int = DEFAULT_KEEP) -> Report:
+    """Copy a verified backup to a second folder and verify the copy there.
+
+    The copy goes to a temporary name first and is renamed only after it passes, so the mirror never holds a
+    half-written file under a name that counts as a backup. Old mirror copies are pruned by count; files that
+    do not follow this module's naming are never touched.
+    """
+    mirror_dir = Path(mirror_dir)
+    rep = Report(ok=False, path=mirror_dir / backup.name)
+    try:
+        mirror_dir.mkdir(parents=True, exist_ok=True)
+        if mirror_dir.resolve() == backup.parent.resolve():
+            rep.problems.append("The mirror folder is the backup folder itself; choose another drive or folder.")
+            return rep
+        tmp = mirror_dir / (backup.name + ".partial")
+        shutil.copy2(backup, tmp)
+    except OSError as exc:
+        rep.problems.append(f"Could not write to the mirror folder {mirror_dir}: {exc}")
+        return rep
+    check = verify_backup(tmp)
+    if not check.ok:
+        tmp.unlink(missing_ok=True)
+        rep.problems += ["Mirror copy failed verification: " + p for p in check.problems]
+        return rep
+    final = mirror_dir / backup.name
+    tmp.replace(final)
+    copies = sorted((p for p in mirror_dir.iterdir() if BACKUP_RE.match(p.name)), key=lambda p: p.name)
+    for old in (copies[:-keep] if keep > 0 else []):  # same rule as prune(): keep <= 0 keeps everything
+        try:
+            old.unlink()
+        except OSError as exc:
+            logger.warning("BACKUP_MIRROR_PRUNE_FAILED %s: %s", old.name, exc)
+    check.path = final
+    return check
+
+
 def create_backup(db_url: Optional[str] = None, keep: int = DEFAULT_KEEP, now: Optional[datetime] = None,
                   models_dir: Optional[Path] = None) -> Report:
     """Make, verify and register a backup. Raises BackupError if it cannot be trusted."""
@@ -220,8 +256,16 @@ def _main(argv: Optional[List[str]] = None) -> int:
     try:
         live = sqlite_path()
         if a.action == "create":
-            print("Backup " + create_backup(keep=a.keep).summary())
-            return 0
+            rep = create_backup(keep=a.keep)
+            print("Backup " + rep.summary())
+            if not settings.backup_mirror_dir:
+                return 0
+            mirror = mirror_backup(rep.path, Path(settings.backup_mirror_dir), keep=a.keep)
+            print("Mirror " + mirror.summary())
+            if not mirror.ok:
+                # The primary backup is good; exit 1 only so the nightly batch file sends the backup alert.
+                logger.error("BACKUP_MIRROR_FAILED: %s", "; ".join(mirror.problems))
+            return 0 if mirror.ok else 1
         if a.action == "list":
             for b in list_backups(live):
                 print(f"{b.name}  {b.stat().st_size / 1e6:.1f} MB")

@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 from src.api import app as api_module
 from src.api.app import app
 
-client = TestClient(app)
+client = TestClient(app, base_url="http://127.0.0.1")  # the API answers only to local host names
 
 
 def test_status_reports_locked_rules_and_paper_only():
@@ -67,9 +67,11 @@ def test_cors_only_allows_localhost_dev_server():
 
 # ── Chat (the only POST; it asks the local model and changes no state) ────────
 
+UI = {"X-Requested-With": "paper-trader", "Origin": "http://127.0.0.1:5173"}  # what the web app sends
+
 def test_chat_returns_reply_and_passes_history():
     with patch("src.api.app.ask_local_chatbot", return_value="You are fully in cash.") as ask:
-        r = client.post("/api/chat", json={"message": "How am I doing?", "history": [{"role": "user", "content": "hi"}]})
+        r = client.post("/api/chat", json={"message": "How am I doing?", "history": [{"role": "user", "content": "hi"}]}, headers=UI)
     assert r.status_code == 200
     assert r.json() == {"reply": "You are fully in cash.", "ok": True}
     assert ask.call_args.kwargs["chat_history"] == [{"role": "user", "content": "hi"}]
@@ -77,7 +79,7 @@ def test_chat_returns_reply_and_passes_history():
 
 def test_chat_marks_failure_when_local_model_is_down():
     with patch("src.api.app.ask_local_chatbot", return_value=api_module.FRIENDLY_ERROR_MSG):
-        body = client.post("/api/chat", json={"message": "hello"}).json()
+        body = client.post("/api/chat", json={"message": "hello"}, headers=UI).json()
     assert body["ok"] is False and body["reply"]
 
 
@@ -90,7 +92,7 @@ def test_chat_marks_failure_when_local_model_is_down():
 ])
 def test_chat_rejects_bad_input(payload):
     with patch("src.api.app.ask_local_chatbot") as ask:
-        assert client.post("/api/chat", json=payload).status_code == 422
+        assert client.post("/api/chat", json=payload, headers=UI).status_code == 422
     ask.assert_not_called()
 
 
@@ -143,3 +145,21 @@ def test_health_includes_the_operations_summary_without_secrets():
     text = str(body)
     for needle in ("bot_token", "api_key", "password", "AAF"):
         assert needle not in text
+
+
+def test_chat_refuses_requests_that_do_not_come_from_the_web_app():
+    with patch("src.api.app.ask_local_chatbot") as ask:
+        assert client.post("/api/chat", json={"message": "hi"}).status_code == 403
+        assert client.post("/api/chat", json={"message": "hi"}, headers={"X-Requested-With": "paper-trader", "Origin": "http://evil.example"}).status_code == 403
+    ask.assert_not_called()
+
+
+@pytest.mark.parametrize("host", ["evil.example", "evil.example:8000", "192.168.1.20:8000"])
+def test_requests_addressed_to_another_host_name_are_refused(host):
+    """DNS rebinding: a page on another site points its own name at 127.0.0.1; its requests carry that name."""
+    assert client.get("/api/status", headers={"Host": host}).status_code == 400
+
+
+@pytest.mark.parametrize("host", ["127.0.0.1:8000", "localhost:8000", "127.0.0.1:5173", "localhost"])
+def test_local_host_names_are_accepted(host):
+    assert client.get("/api/status", headers={"Host": host}).status_code == 200

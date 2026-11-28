@@ -29,6 +29,7 @@ from src.services import ops_status
 logger = logging.getLogger(__name__)
 
 ALLOWED_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:5173"]
+ALLOWED_HOSTS = ["127.0.0.1", "localhost"]  # Host header names this API answers to (port ignored)
 UI_HEADER = ("x-requested-with", "paper-trader")
 MARKET = "US"
 

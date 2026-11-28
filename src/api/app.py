@@ -22,8 +22,9 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List
 
 import pandas as pd
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.trustedhost import TrustedHostMiddleware
 from pydantic import BaseModel, Field
 
 from config.settings import settings
@@ -32,7 +33,7 @@ from src.llm import ollama_client
 from src.services import data_loader as dl
 from src.services import market_service as ms
 from src.services import ops_status
-from src.api.ops_routes import ALLOWED_ORIGINS, router as ops_router
+from src.api.ops_routes import ALLOWED_HOSTS, ALLOWED_ORIGINS, require_local_ui, router as ops_router
 
 logger = logging.getLogger(__name__)
 
@@ -60,6 +61,9 @@ app = FastAPI(
     description="Read-only. " + PAPER_NOTICE,
     version="1.0.0",
 )
+# Only answer requests addressed to this machine by name. A web page on another site that re-points its own
+# domain at 127.0.0.1 (DNS rebinding) sends its own domain in the Host header and is refused here.
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=ALLOWED_HOSTS)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
@@ -262,8 +266,9 @@ def chat_status() -> Dict[str, Any]:
 
 
 @app.post("/api/chat")
-def chat(req: ChatRequest) -> Dict[str, Any]:
+def chat(req: ChatRequest, request: Request) -> Dict[str, Any]:
     """Ask the local Ollama model about the portfolio. Reads state only; never trades."""
+    require_local_ui(request)  # it only reads, but each question costs real CPU, so only the web app may ask
     message = req.message.strip()
     if not message:
         raise HTTPException(status_code=422, detail="Message is empty.")

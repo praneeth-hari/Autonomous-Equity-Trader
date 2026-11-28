@@ -5,7 +5,7 @@ An ML-driven, risk-first paper-trading platform that ranks US equities, enforces
 > **Paper trading only.** There is no real-money or live-broker code in this project. Nothing here is financial advice.
 
 ![Python](https://img.shields.io/badge/python-3.11-blue)
-![scikit-learn](https://img.shields.io/badge/ML-scikit--learn%20%7C%20XGBoost%20%7C%20LightGBM-orange)
+![scikit-learn](https://img.shields.io/badge/ML-scikit--learn%20%7C%20XGBoost-orange)
 ![React](https://img.shields.io/badge/dashboard-React%20%2B%20FastAPI-61dafb)
 ![Tests](https://img.shields.io/badge/tests-pytest-green)
 
@@ -78,7 +78,7 @@ All defaults live in `config/settings.py` and can be overridden through `.env`.
 |---|---|
 | Language | Python 3.11 |
 | Data | pandas, numpy, yfinance, Alpha Vantage, pandas-market-calendars |
-| ML | scikit-learn (HistGradientBoosting, Logistic Regression), XGBoost, LightGBM, SHAP, Optuna |
+| ML | scikit-learn (HistGradientBoosting, Logistic Regression), XGBoost, SHAP, Optuna |
 | NLP / alerts | VaderSentiment, python-telegram-bot, Ollama (local LLM chatbot and sentiment) |
 | Storage | SQLAlchemy, SQLite / PostgreSQL |
 | Dashboard | React, Vite, TypeScript, Tailwind, Recharts; read-only FastAPI backend |
