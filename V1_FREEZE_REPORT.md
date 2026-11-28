@@ -143,4 +143,9 @@ Note: docs/ENGINEERING_RULES.md lists the signal exit as a flat 0.45. The code u
   - Kill switch: the persisted state is no longer copied into `settings`, so switching it off resumes trading in a long-running process. Behaviour in a fresh nightly process is unchanged.
   - Approvals: new setting `HUMAN_APPROVAL_REQUIRED`, **off by default**, so V1 behaviour is unchanged. When on, a queued BUY fills only if approved; SELLs (including stop-losses) are never held back.
   - Data-gate review (`docs/DATA_GATE_REVIEW.md`): the gate was **not** changed. It found that the spike rule rejects volume-backed earnings gaps and excludes the stock for 724 days (UNH is out until 2027-04-11).
+- **2026-11-28: data-gate fixes added behind two settings, both OFF by default (V1 behaviour unchanged).**
+  - `GATE_SPIKE_VOLUME_EXCEPTION` (option B): a dynamic spike on at least 2x its prior 20-day average volume is treated as a real move, not bad data. Same-day data only.
+  - `GATE_GAPS_COUNT_SESSIONS`: missing days are counted in consecutive NYSE sessions, and the live check rejects a stock with 6+ in a row. Backtest (point-in-time) validation still only warns.
+  - Replay on stored history (read-only): frozen mode flags the same 8 days as the review and excludes UNH today; with both on, only the suspected bad TSLA print (2024-09-19) is flagged, nothing is excluded today, and the live check rejects nothing.
+  - **Turning either on is a configuration change:** log the date here, treat forward results from that day as a new configuration (not comparable with earlier days), and first replay the backtest with and without the exclusions (not yet done).
 

@@ -315,6 +315,23 @@ class Settings(BaseSettings):
         gt=0,
         description="Minimum volume ratio relative to 20-day mean required to validate a 25%+ price jump.",
     )
+    # Data-gate fixes from docs/DATA_GATE_REVIEW.md. Both are OFF by default so the frozen V1 behaviour is unchanged;
+    # turning either on is a configuration change that must be logged in V1_FREEZE_REPORT.md section 8.
+    gate_spike_volume_exception: bool = Field(
+        default=False,
+        description="Option B: do not treat a dynamic price spike as bad data when that day's volume is at least "
+                    "gate_spike_volume_ratio times its prior 20-day average (a real news move). Same-day data only.",
+    )
+    gate_spike_volume_ratio: float = Field(
+        default=2.0,
+        gt=1.0,
+        description="Volume multiple (vs the prior 20-day average) that marks a spike as a real, traded move.",
+    )
+    gate_gaps_count_sessions: bool = Field(
+        default=False,
+        description="Count consecutive missing NYSE trading sessions (not calendar days), so a gap spanning a "
+                    "weekend is one run; in the live check, reject a stock with 6 or more consecutive missing sessions.",
+    )
 
     # ── Section 2: Risk & Safety Rules ────────────────────────────────────────
     # Adaptive conviction thresholds (Item 5)

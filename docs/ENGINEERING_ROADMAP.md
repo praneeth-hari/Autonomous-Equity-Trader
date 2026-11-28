@@ -41,7 +41,7 @@ Status: ☐ pending · ◐ in progress · ☑ done (with evidence)
 
 | ID | Pri | Task | Files | Acceptance criteria | Verify by | Depends | Effort | Status |
 |---|---|---|---|---|---|---|---|---|
-| T5.1 | P1 | Choose option A/B/C from `docs/DATA_GATE_REVIEW.md` and implement it behind a setting, defaulting to the frozen behaviour until you switch it on | `src/data/validation.py`, settings, tests, freeze report change log | Real earnings gaps on high volume pass; the TSLA-type bad print is still rejected; frozen mode reproduces today's results exactly | `python -m src.ops.gate_review` before/after + tests | approval | 2–3 h | ☐ |
+| T5.1 | P1 | Choose option A/B/C from `docs/DATA_GATE_REVIEW.md` and implement it behind a setting, defaulting to the frozen behaviour until you switch it on | `src/data/validation.py`, settings, tests, freeze report change log | Real earnings gaps on high volume pass; the TSLA-type bad print is still rejected; frozen mode reproduces today's results exactly | `python -m src.ops.gate_review` before/after + tests | approval | 2–3 h | ☑ 2026-11-28: option B + session-based gap counting, both settings off; 14 new tests; replay: frozen = today's results, fixed = only the TSLA bad print flagged. Turning on is your decision (see freeze report §8); backtest replay with/without exclusions still to do |
 
 ## Phase 6: Documentation and presentation (recommended)
 

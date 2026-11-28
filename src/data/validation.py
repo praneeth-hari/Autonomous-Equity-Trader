@@ -331,6 +331,17 @@ def _price_spike_masks(df: pd.DataFrame):
         dynamic_threshold = pd.Series(SPIKE_THRESHOLD, index=df.index)
     dynamic_spike_mask = pct_change > dynamic_threshold
 
+    # Option B (docs/DATA_GATE_REVIEW.md, off by default): a spike traded on heavy volume is a real move, not a bad
+    # print. Volume and its prior 20-day average are both known at that day's close, so this adds no look-ahead.
+    if settings.gate_spike_volume_exception and "volume" in df.columns and dynamic_spike_mask.any():
+        prior_avg_vol = df["volume"].shift(1).rolling(20, min_periods=5).mean()
+        heavy_volume = (df["volume"] / prior_avg_vol.replace(0, np.nan)) >= settings.gate_spike_volume_ratio
+        excused = dynamic_spike_mask & heavy_volume.fillna(False)
+        name = str(df["ticker"].iloc[0]) if "ticker" in df.columns and len(df) else "?"
+        for d in df.loc[excused, "date"].tolist():
+            logger.info("SPIKE_EXCUSED_BY_VOLUME %s %s: move on heavy volume treated as a real event, not bad data.", name, d)
+        dynamic_spike_mask = dynamic_spike_mask & ~excused
+
     # 2. >= 25% price jump without volume spike (normal volume)
     suspicious_jumps = pd.Series(False, index=df.index)
     vol_ratio = pd.Series(np.nan, index=df.index)
@@ -408,14 +419,19 @@ def check_trading_gaps(
 
     # Find contiguous runs of missing days to detect multi-day gaps.
     missing_dt = pd.to_datetime(missing_days)
+    session_index = {d: i for i, d in enumerate(sorted(expected_trading_days))}
     gaps: List[List[str]] = []
     current_run: List[str] = [missing_days[0]]
     for i in range(1, len(missing_days)):
-        # A contiguous run means each missing day is a consecutive trading day.
-        # We check by calendar date proximity (not strict +1d because trading
-        # days can skip weekends — but these are already filtered out by using
-        # the NYSE calendar as the expected set).
-        if missing_dt[i] == missing_dt[i - 1] + pd.Timedelta(days=1):
+        if settings.gate_gaps_count_sessions:
+            # Fixed rule (off by default): consecutive means adjacent NYSE sessions, so a gap that spans a weekend
+            # or holiday is still one run.
+            consecutive = session_index[missing_days[i]] == session_index[missing_days[i - 1]] + 1
+        else:
+            # Frozen V1 rule: only dates exactly one calendar day apart count as consecutive, so every weekend
+            # splits a run and no run can exceed 5 (known flaw, see docs/DATA_GATE_REVIEW.md).
+            consecutive = missing_dt[i] == missing_dt[i - 1] + pd.Timedelta(days=1)
+        if consecutive:
             current_run.append(missing_days[i])
         else:
             gaps.append(current_run)
@@ -503,6 +519,19 @@ def validate_ticker_data(df: pd.DataFrame, ticker: str) -> ValidationResult:
 
     # --- WARNING checks (do not reject) ---
     warnings += check_trading_gaps(df, clean_ticker)
+    if settings.gate_gaps_count_sessions:
+        # Fixed rule: 6+ consecutive missing sessions in the data being decided on is a rejection, as documented.
+        gap_errors = [w for w in warnings if w.startswith("CRITICAL:")]
+        if gap_errors:
+            for e in gap_errors:
+                logger.error("VALIDATION REJECTED %s: %s", clean_ticker, e)
+            return ValidationResult(
+                ticker=clean_ticker,
+                is_valid=False,
+                cleaned_df=pd.DataFrame(columns=REQUIRED_COLUMNS),
+                errors=gap_errors,
+                warnings=[w for w in warnings if w not in gap_errors],
+            )
     for w in warnings:
         level = logging.CRITICAL if w.startswith("CRITICAL") else logging.WARNING
         logger.log(level, "VALIDATION WARNING %s: %s", clean_ticker, w)

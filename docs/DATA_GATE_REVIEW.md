@@ -2,6 +2,10 @@
 
 **Date:** 2026-11-25 · **Status:** report only. Nothing in the frozen V1 configuration was changed.
 
+> **Update 2026-11-28:** option B and session-based gap counting were chosen and built behind
+> `GATE_SPIKE_VOLUME_EXCEPTION` and `GATE_GAPS_COUNT_SESSIONS`, both **off** by default. See `V1_FREEZE_REPORT.md` section 8
+> for the replay result and what switching them on means.
+
 Reproduce it with `python -m src.ops.gate_review`. It reads stored prices and writes nothing.
 
 ## The finding in one paragraph

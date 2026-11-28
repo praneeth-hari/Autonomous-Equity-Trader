@@ -22,7 +22,7 @@ Read side: SQLite → `src/services` → FastAPI (127.0.0.1:8000) → React app 
 Full table: `docs/ENGINEERING_AUDIT.md` §2.
 - **Implemented:** daily pipeline, lag rule, NYSE calendar, frozen model + integrity checks, risk engine, paper broker,
   backtester with SPY known-answer test, approvals, kill switch, API, React app, Telegram alerts, backups, pre-flight.
-- **Partial:** data gate (flawed spike rule, frozen), heartbeat (not configured), backups (second copy available but `BACKUP_MIRROR_DIR` not set), SHAP (on demand only).
+- **Partial:** data gate (frozen rule still active; fixes available behind `GATE_SPIKE_VOLUME_EXCEPTION` and `GATE_GAPS_COUNT_SESSIONS`), heartbeat (not configured), backups (second copy available but `BACKUP_MIRROR_DIR` not set), SHAP (on demand only).
 - **Broken:** none known. (CI fixed and the dead ensemble branch removed on 2026-11-27.)
 - **Unverified:** live effect of intelligence layers. (First unattended trading-day run happened 2026-11-27, see below.)
 
@@ -38,7 +38,7 @@ Strong: leakage controls, safety-first risk engine, test isolation incl. product
 Weak: a few large modules, docs partly stale, no type checking.
 
 ## Roadmap progress
-Current phase: **Phase 4 done** (Phases 1–4 approved 2026-11-27); next is Phase 5 (data-gate decision, needs your choice) or Phase 6 (docs).
+Current phase: **Phase 5 done** (2026-11-28); next is Phase 6 (docs). Data-gate fixes are built but OFF until you turn them on.
 Done: T1.2 CI green (run 45924755642), T1.4 history re-joined, T2.2 data-dependent tests skip on a fresh clone.
 Waiting on you: T1.1 rotate Telegram token, T1.3 healthchecks.io check.
 
@@ -54,7 +54,7 @@ Waiting on you: T1.1 rotate Telegram token, T1.3 healthchecks.io check.
 - V1 frozen 2026-09-26; no tuning, no real money, no cloud.
 - Kill switch halts the whole run, including stop-losses (deliberate, documented).
 - Human approval of buys is opt-in; sells are never held.
-- Data-gate rule left unchanged pending a decision (`docs/DATA_GATE_REVIEW.md`).
+- Data gate: option B and session-based gap counting chosen 2026-11-28, built behind settings that are off; switching on = new configuration (freeze report §8).
 - GitHub history was rewritten (wording changes in 18 files). Local `main` was reset to it on 2026-11-27; the old local history is in branch `local-history-backup`.
 
 ## Next recommended action
